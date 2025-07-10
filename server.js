@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -7,29 +8,33 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Middlewares
+const parseUser = require('./middleware/parseUser');
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(parseUser);
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
+// Protected route untuk dashboard
 app.get('/dashboard.html', (req, res) => {
-  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
+  const user = req.user;
+
   console.log('🔐 Akses dashboard:', user?.email || 'Tanpa login');
 
   if (!user) {
     console.log('🔁 Redirect ke login page');
-    res.redirect('/');
-    return;
+    return res.redirect('/');
   }
 
   console.log('📄 Hantar dashboard.html');
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
+
+// Root route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Import routes
@@ -41,7 +46,7 @@ app.use('/api', companyRoutes);
 app.use('/api', authRoutes);
 app.use('/api', planningRoutes);
 
-// Start
+// Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server ready di http://localhost:${PORT}`);
   console.log('✅ DB_HOST:', process.env.DB_HOST);
