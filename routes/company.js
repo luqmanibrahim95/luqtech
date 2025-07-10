@@ -329,4 +329,31 @@ router.post('/update-company', async (req, res) => {
   }
 });
 
+// POST /api/add-company-info
+router.post('/add-company-info', async (req, res) => {
+  const user = req.user;
+
+  if (!user || !user.company_id) {
+    return res.status(401).json({ success: false, message: 'Sesi tidak sah.' });
+  }
+
+  const { label, value } = req.body;
+
+  if (!label || !value) {
+    return res.status(400).json({ success: false, message: 'Label dan nilai diperlukan.' });
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO company_infos (company_id, label, value) VALUES (?, ?, ?)`,
+      [user.company_id, label.trim(), value.trim()]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error add-company-info:', err);
+    res.status(500).json({ success: false, message: 'Ralat server.' });
+  }
+});
+
 module.exports = router;
