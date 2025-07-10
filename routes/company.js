@@ -307,7 +307,6 @@ router.get('/company-info', async (req, res) => {
   }
 });
 
-// POST /api/update-company
 router.post('/update-company', async (req, res) => {
   const user = req.user;
   const { address, phone, email, about } = req.body;
@@ -322,12 +321,11 @@ router.post('/update-company', async (req, res) => {
       [address || '', phone || '', email || '', about || '', user.company_id]
     );
 
-    res.json({ success: true, message: 'Maklumat syarikat berjaya dikemaskini.' });
+    res.json({ success: true, message: 'Maklumat syarikat dikemaskini.' });
   } catch (err) {
     console.error('Error update company:', err);
     res.status(500).json({ success: false, message: 'Ralat server.' });
   }
 });
-
 
 module.exports = router;

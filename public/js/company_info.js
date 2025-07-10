@@ -18,55 +18,81 @@ function loadSyarikatInfo() {
 
       const { company, extraInfos } = data;
 
-        let html = `
-        <h2>🏢 Maklumat Syarikat</h2>
+      let html = `
         <form id="editCompanyForm">
-            <label>Nama:</label><br>
-            <input type="text" value="${company.company_name}" disabled><br><br>
+        <label><strong>Nama:</strong></label><br>
+        <input type="text" value="${company.company_name}" disabled><br><br>
 
-            <label>Alamat:</label><br>
-            <input type="text" name="address" value="${company.address || ''}"><br><br>
+        <label><strong>Alamat:</strong></label><br>
+        <input type="text" name="address" value="${company.address || ''}"><br><br>
 
-            <label>Email:</label><br>
-            <input type="email" name="email" value="${company.email || ''}"><br><br>
+        <label><strong>Email:</strong></label><br>
+        <input type="email" name="email" value="${company.email || ''}"><br><br>
 
-            <label>Telefon:</label><br>
-            <input type="text" name="phone" value="${company.phone || ''}"><br><br>
+        <label><strong>Telefon:</strong></label><br>
+        <input type="text" name="phone" value="${company.phone || ''}"><br><br>
 
-            <label>About:</label><br>
-            <textarea name="about" rows="3">${company.about || ''}</textarea><br><br>
+        <label><strong>About:</strong></label><br>
+        <textarea name="about" rows="3">${company.about || ''}</textarea><br><br>
 
-            <button type="submit">💾 Simpan</button>
+        <button type="submit">💾 Simpan</button>
         </form>
         <div id="updateStatus" style="margin-top:10px;"></div>
 
+
         <hr style="margin: 20px 0;">
-        ...
-        `;
+
+        <h3>📌 Info Tambahan</h3>
+        <ul id="extraInfos">
+          ${extraInfos.length === 0 ? '<li>Tiada info tambahan</li>' :
+            extraInfos.map(info => `<li><strong>${info.label}:</strong> ${info.value}</li>`).join('')
+          }
+        </ul>
+
+        <h4 style="margin-top:20px;">➕ Tambah Info</h4>
+        <form id="addCompanyInfoForm">
+          <label>Nama Info:</label><br>
+          <input type="text" name="label" required><br><br>
+
+          <label>Data:</label><br>
+          <input type="text" name="value" required><br><br>
+
+          <button type="submit">Tambah</button>
+        </form>
+        <div id="addInfoStatus" style="margin-top:10px;"></div>
+
+        <hr style="margin: 20px 0;">
+        <button id="btnLeaveCompany">Keluar dari syarikat</button>
+        <div id="leaveStatus" style="margin-top:10px;"></div>
+      `;
 
       document.querySelector('.center-panel').innerHTML = html;
 
       document.getElementById('editCompanyForm').addEventListener('submit', function (e) {
-      e.preventDefault();
-      const formData = new FormData(this);
-      const data = Object.fromEntries(formData.entries());
+        e.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
 
-      fetch('/api/update-company', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-        .then(res => res.json())
-        .then(result => {
+        fetch('/api/update-company', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(res => res.json())
+            .then(result => {
             const box = document.getElementById('updateStatus');
             if (result.success) {
                 box.textContent = '✅ Maklumat berjaya dikemaskini.';
-                loadSyarikatInfo(); // reload info
+                loadSyarikatInfo(); // Reload
             } else {
                 box.textContent = '❌ ' + (result.message || 'Gagal kemaskini.');
             }
+            })
+            .catch(err => {
+            console.error('❌ Error kemaskini syarikat:', err);
+            document.getElementById('updateStatus').textContent = '❌ Ralat sambungan semasa kemaskini.';
+            });
         });
-      });
 
       document.getElementById('btnLeaveCompany').addEventListener('click', () => {
         if (confirm('Adakah anda pasti mahu keluar dari syarikat ini?')) {
