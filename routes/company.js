@@ -2,8 +2,11 @@
 const express = require('express');
 const pool = require('../db/db');
 const { generateCompanyCode } = require('../utils/helpers');
+const parseUser = require('../middleware/parseUser');
 
 const router = express.Router();
+
+router.use(parseUser);
 
 // GET /api/search-company
 router.get('/search-company', async (req, res) => {
@@ -282,6 +285,27 @@ router.post('/promote-admin', async (req, res) => {
   }
 });
 
+// Ambil maklumat syarikat + info tambahan
+router.get('/company-info', async (req, res) => {
+  const user = req.user;
+  if (!user || !user.company_id) {
+    return res.json({ success: false, message: 'Tiada syarikat untuk user ini' });
+  }
+
+  try {
+    const [companyResult] = await pool.query('SELECT * FROM companies WHERE id = ?', [user.company_id]);
+    const [extraInfos] = await pool.query('SELECT * FROM company_infos WHERE company_id = ?', [user.company_id]);
+
+    if (companyResult.length === 0) {
+      return res.json({ success: false, message: 'Syarikat tidak dijumpai' });
+    }
+
+    return res.json({ success: true, company: companyResult[0], extraInfos });
+  } catch (err) {
+    console.error('Error get company info:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 
 module.exports = router;
