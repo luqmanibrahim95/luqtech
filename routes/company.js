@@ -307,6 +307,7 @@ router.get('/company-info', async (req, res) => {
   }
 });
 
+// Tambahan route update-company
 router.post('/update-company', async (req, res) => {
   const user = req.user;
   const { address, phone, email, about } = req.body;
