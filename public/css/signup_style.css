@@ -1,0 +1,68 @@
+/* index.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #2f80ed, #56ccf2);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.signup-box {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+.signup-box h2 {
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.signup-box input,
+.signup-box select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.signup-box button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background-color: #2f80ed;
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.signup-box button:hover {
+    background-color: #1366d6;
+}
+
+.signup-box a {
+    color: #2f80ed;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.signup-box a:hover {
+    text-decoration: underline;
+}
+
+p {
+    margin-top: 15px;
+}

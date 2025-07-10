@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="css/dashboard_style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+</head>
+<body>
+  <div class="header">
+    <div class="left-section">
+      📁 Sistem Prosedur
+    </div>
+    <div class="right-section">
+      <button class="menu-button" onclick="toggleDropdown()">☰</button>
+        <div class="dropdown" id="dropdownMenu">
+        <a href="#" onclick="openProfile()">Profil</a>
+        <a href="#" onclick="logout()">Log Keluar</a>
+        </div>
+    </div>
+  </div>
+
+  <div class="main-container">
+    <div class="left-panel">
+      <div><strong id="user-name">Nama Pengguna</strong></div>
+      <div id="user-email">user@email.com</div>
+      <div id="user-role">Role: Pengguna</div>
+      <div id="user-company">Syarikat: Nama Syarikat</div>
+
+      <hr style="margin: 20px 0;">
+
+      <button onclick="loadProcedureList()">📄 Prosedur</button><br><br>
+      <button onclick="loadPlanningCalendar()">📅 Perancangan</button>
+    </div>
+
+    <div class="center-panel">
+      <!-- Kandungan dinamik akan dipaparkan di sini -->
+    </div>
+  </div>
+
+  <!-- ✅ Script Section Dipindah ke Bawah -->
+  <script src="js/dashboard.js"></script>
+  <script src="js/search_company.js"></script>
+  <script src="js/register_company.js"></script>
+  <script src="js/join_company.js"></script>
+  <script src="js/leave_company.js"></script>
+  <script src="js/join_request.js"></script>
+  <script src="js/join_request_admin.js"></script>
+  <script src="js/company_members.js"></script>
+  <script src="js/planning_calendar.js"></script>
+  <script src="js/edit_profile.js"></script>
+
+  <script>
+    function toggleDropdown() {
+      const menu = document.getElementById("dropdownMenu");
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";
+    }
+
+    function logout() {
+    fetch('/api/logout', { method: 'POST' })
+        .then(() => location.href = '/');
+    }
+
+  </script>
+</body>
+</html>
+
+if (!user) {
+  res.redirect('/');
+  return;
+}
+res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+
