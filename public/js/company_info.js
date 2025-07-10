@@ -39,7 +39,6 @@ function loadSyarikatInfo() {
         </form>
         <div id="updateStatus" style="margin-top:10px;"></div>
 
-
         <hr style="margin: 20px 0;">
 
         <h3>📌 Info Tambahan</h3>
@@ -66,34 +65,67 @@ function loadSyarikatInfo() {
         <div id="leaveStatus" style="margin-top:10px;"></div>
       `;
 
+      // Masukkan dalam panel
       document.querySelector('.center-panel').innerHTML = html;
 
+      // 🎯 Simpan maklumat syarikat
       document.getElementById('editCompanyForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
         fetch('/api/update-company', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
         })
-            .then(res => res.json())
-            .then(result => {
+          .then(res => res.json())
+          .then(result => {
             const box = document.getElementById('updateStatus');
             if (result.success) {
-                box.textContent = '✅ Maklumat berjaya dikemaskini.';
-                loadSyarikatInfo(); // Reload
+              box.textContent = '✅ Maklumat berjaya dikemaskini.';
+              loadSyarikatInfo(); // Reload
             } else {
-                box.textContent = '❌ ' + (result.message || 'Gagal kemaskini.');
+              box.textContent = '❌ ' + (result.message || 'Gagal kemaskini.');
             }
-            })
-            .catch(err => {
+          })
+          .catch(err => {
             console.error('❌ Error kemaskini syarikat:', err);
             document.getElementById('updateStatus').textContent = '❌ Ralat sambungan semasa kemaskini.';
-            });
-        });
+          });
+      });
 
+      // ➕ Tambah info syarikat
+      document.getElementById('addCompanyInfoForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const infoData = Object.fromEntries(formData.entries());
+
+        console.log('📤 Menghantar info tambahan:', infoData); // Debug
+
+        fetch('/api/add-company-info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(infoData)
+        })
+          .then(res => res.json())
+          .then(result => {
+            const box = document.getElementById('addInfoStatus');
+            if (result.success) {
+              box.textContent = '✅ Info berjaya ditambah.';
+              loadSyarikatInfo(); // Reload panel
+            } else {
+              box.textContent = '❌ ' + (result.message || 'Gagal tambah info.');
+            }
+          })
+          .catch(err => {
+            console.error('❌ Gagal tambah info:', err);
+            document.getElementById('addInfoStatus').textContent = '❌ Ralat sambungan semasa tambah info.';
+          });
+      });
+
+      // 🚪 Keluar dari syarikat
       document.getElementById('btnLeaveCompany').addEventListener('click', () => {
         if (confirm('Adakah anda pasti mahu keluar dari syarikat ini?')) {
           leaveCompany();
@@ -106,32 +138,7 @@ function loadSyarikatInfo() {
     });
 }
 
-// POST /api/update-company
-router.post('/update-company', async (req, res) => {
-  const user = req.user;
-  if (!user || !user.company_id || !user.is_admin) {
-    return res.status(403).json({ success: false, message: 'Tidak dibenarkan.' });
-  }
-
-  const { address = '', phone = '', email = '', about = '' } = req.body;
-
-  try {
-    await pool.query(
-      `UPDATE companies SET address = ?, phone = ?, email = ?, about = ? WHERE id = ?`,
-      [address, phone, email, about, user.company_id]
-    );
-
-    res.json({ success: true, message: 'Maklumat syarikat berjaya dikemaskini.' });
-  } catch (err) {
-    console.error('Error update company:', err);
-    res.status(500).json({ success: false, message: 'Ralat server semasa kemaskini.' });
-  }
-});
-
-// ✅ Ini penting: Luq MESTI panggil loadSyarikatInfo() bila perlu
-// Contoh: Bila user klik nama syarikat di sidebar
-
-// Kalau Luq nak test automatik:
+// Auto load kalau flag diset
 document.addEventListener('DOMContentLoaded', () => {
   if (window.autoLoadCompanyInfo) {
     loadSyarikatInfo();
