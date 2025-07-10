@@ -1,7 +1,16 @@
 function loadSyarikatInfo() {
+  console.log('⏳ Memuatkan maklumat syarikat...');
+
   fetch('/api/company-info')
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        throw new Error('HTTP status bukan 200');
+      }
+      return res.json();
+    })
     .then(data => {
+      console.log('📦 Data syarikat:', data);
+
       if (!data.success) {
         alert(data.message || "Gagal ambil maklumat syarikat.");
         return;
@@ -49,19 +58,19 @@ function loadSyarikatInfo() {
         e.preventDefault();
 
         const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
+        const infoData = Object.fromEntries(formData.entries());
 
         fetch('/api/add-company-info', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+          body: JSON.stringify(infoData)
         })
           .then(res => res.json())
           .then(result => {
             const box = document.getElementById('addInfoStatus');
             if (result.success) {
               box.textContent = '✅ Info berjaya ditambah.';
-              loadSyarikatInfo(); // reload panel
+              loadSyarikatInfo(); // Reload
             } else {
               box.textContent = '❌ ' + (result.message || 'Gagal tambah info.');
             }
@@ -73,5 +82,19 @@ function loadSyarikatInfo() {
           leaveCompany();
         }
       });
+    })
+    .catch(err => {
+      console.error('❌ Gagal fetch syarikat:', err);
+      alert('Ralat sistem atau sambungan semasa memuatkan maklumat syarikat.');
     });
 }
+
+// ✅ Ini penting: Luq MESTI panggil loadSyarikatInfo() bila perlu
+// Contoh: Bila user klik nama syarikat di sidebar
+
+// Kalau Luq nak test automatik:
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.autoLoadCompanyInfo) {
+    loadSyarikatInfo();
+  }
+});
