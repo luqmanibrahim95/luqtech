@@ -134,6 +134,29 @@ function loadSyarikatInfo() {
     });
 }
 
+function leaveCompany() {
+  fetch('/api/leave-company', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+    .then(res => res.json())
+    .then(result => {
+      const statusBox = document.getElementById('leaveStatus');
+      if (result.success) {
+        statusBox.textContent = '✅ Anda telah keluar dari syarikat.';
+        setTimeout(() => {
+          location.reload(); // Refresh semula dashboard
+        }, 1000);
+      } else {
+        statusBox.textContent = '❌ ' + (result.message || 'Gagal keluar dari syarikat.');
+      }
+    })
+    .catch(err => {
+      console.error('❌ Ralat keluar syarikat:', err);
+      document.getElementById('leaveStatus').textContent = '❌ Ralat sambungan semasa keluar syarikat.';
+    });
+}
+
 // Auto load kalau flag diset
 document.addEventListener('DOMContentLoaded', () => {
   if (window.autoLoadCompanyInfo) {
