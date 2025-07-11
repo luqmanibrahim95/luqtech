@@ -43,17 +43,17 @@ function loadSyarikatInfo() {
         <h3>📌 Info Tambahan</h3>
         <ul id="extraInfos">
         ${extraInfos.length === 0
-            ? '<li>Tiada info tambahan</li>'
-            : extraInfos.map(info => `
-                <li data-id="${info.id}">
+          ? '<li>Tiada info tambahan</li>'
+          : extraInfos.map(info => `
+              <li data-id="${info.id}">
                 <strong>${info.label}:</strong> 
                 <span class="info-value">${info.value}</span>
                 ${isAdmin ? `
-                    <button class="edit-info">✏️</button>
-                    <button class="delete-info">🗑️</button>
+                  <button class="edit-info">✏️</button>
+                  <button class="delete-info">🗑️</button>
                 ` : ''}
-                </li>
-            `).join('')}
+              </li>
+          `).join('')}
         </ul>
 
         <h4 style="margin-top:20px;">➕ Tambah Info</h4>
@@ -77,7 +77,7 @@ function loadSyarikatInfo() {
 
       document.querySelector('.center-panel').innerHTML = html;
 
-      // Jika admin, aktifkan form
+      // ✅ Submit form syarikat (admin)
       if (isAdmin) {
         document.getElementById('editCompanyForm').addEventListener('submit', function (e) {
           e.preventDefault();
@@ -105,6 +105,7 @@ function loadSyarikatInfo() {
             });
         });
 
+        // ✅ Tambah info syarikat
         document.getElementById('addCompanyInfoForm').addEventListener('submit', function (e) {
           e.preventDefault();
           const formData = new FormData(this);
@@ -130,9 +131,62 @@ function loadSyarikatInfo() {
               document.getElementById('addInfoStatus').textContent = '❌ Ralat sambungan semasa tambah info.';
             });
         });
+
+        // ✅ Edit info tambahan
+        document.querySelectorAll('.edit-info').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            const id = li.dataset.id;
+            const label = li.querySelector('strong').innerText.replace(':', '');
+            const value = li.querySelector('.info-value').innerText;
+
+            const newValue = prompt(`Edit nilai untuk "${label}":`, value);
+            if (newValue !== null) {
+              fetch('/api/update-company-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, value: newValue })
+              })
+                .then(res => res.json())
+                .then(result => {
+                  if (result.success) {
+                    loadSyarikatInfo();
+                  } else {
+                    alert('❌ Gagal kemaskini info.');
+                  }
+                })
+                .catch(() => alert('❌ Ralat sambungan semasa edit info.'));
+            }
+          });
+        });
+
+        // ✅ Padam info tambahan
+        document.querySelectorAll('.delete-info').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            const id = li.dataset.id;
+
+            if (confirm('Padam info ini?')) {
+              fetch('/api/delete-company-info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+              })
+                .then(res => res.json())
+                .then(result => {
+                  if (result.success) {
+                    loadSyarikatInfo();
+                  } else {
+                    alert('❌ Gagal padam info.');
+                  }
+                })
+                .catch(() => alert('❌ Ralat sambungan semasa padam info.'));
+            }
+          });
+        });
       }
 
-      // Listener keluar syarikat
+      // ✅ Keluar syarikat
       document.getElementById('btnLeaveCompany').addEventListener('click', () => {
         if (confirm('Adakah anda pasti mahu keluar dari syarikat ini?')) {
           leaveCompany();
@@ -168,7 +222,7 @@ function leaveCompany() {
     });
 }
 
-// Auto load kalau flag diset
+// ✅ Auto load bila flag aktif
 document.addEventListener('DOMContentLoaded', () => {
   if (window.autoLoadCompanyInfo) {
     loadSyarikatInfo();
