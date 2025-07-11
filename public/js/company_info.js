@@ -18,7 +18,6 @@ function loadSyarikatInfo() {
       const isAdmin = window.isAdmin;
 
       let html = `
-        <h1 style="color: green;">Maklumat Syarikat</h1>
         <form id="editCompanyForm">
           <label><strong>Nama:</strong></label><br>
           <input type="text" value="${company.company_name}" disabled><br><br>
@@ -43,9 +42,18 @@ function loadSyarikatInfo() {
 
         <h3>📌 Info Tambahan</h3>
         <ul id="extraInfos">
-          ${extraInfos.length === 0
+        ${extraInfos.length === 0
             ? '<li>Tiada info tambahan</li>'
-            : extraInfos.map(info => `<li><strong>${info.label}:</strong> ${info.value}</li>`).join('')}
+            : extraInfos.map(info => `
+                <li data-id="${info.id}">
+                <strong>${info.label}:</strong> 
+                <span class="info-value">${info.value}</span>
+                ${isAdmin ? `
+                    <button class="edit-info">✏️</button>
+                    <button class="delete-info">🗑️</button>
+                ` : ''}
+                </li>
+            `).join('')}
         </ul>
 
         <h4 style="margin-top:20px;">➕ Tambah Info</h4>

@@ -356,4 +356,64 @@ router.post('/add-company-info', async (req, res) => {
   }
 });
 
+router.post('/update-company-info', async (req, res) => {
+  const user = req.user;
+  const { id, value } = req.body;
+
+  if (!user || !user.is_admin || !user.company_id) {
+    return res.status(403).json({ success: false, message: 'Tidak dibenarkan.' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM company_infos WHERE id = ? AND company_id = ?`,
+      [id, user.company_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Info tidak dijumpai.' });
+    }
+
+    await pool.query(
+      `UPDATE company_infos SET value = ? WHERE id = ?`,
+      [value.trim(), id]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error update-company-info:', err);
+    res.status(500).json({ success: false });
+  }
+});
+
+router.post('/delete-company-info', async (req, res) => {
+  const user = req.user;
+  const { id } = req.body;
+
+  if (!user || !user.is_admin || !user.company_id) {
+    return res.status(403).json({ success: false, message: 'Tidak dibenarkan.' });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT * FROM company_infos WHERE id = ? AND company_id = ?`,
+      [id, user.company_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Info tidak dijumpai.' });
+    }
+
+    await pool.query(
+      `DELETE FROM company_infos WHERE id = ?`,
+      [id]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error delete-company-info:', err);
+    res.status(500).json({ success: false });
+  }
+});
+
 module.exports = router;
