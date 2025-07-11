@@ -17,6 +17,7 @@ function loadSyarikatInfo() {
       const { company, extraInfos } = data;
 
       let html = `
+        <h1 style="color: green;">Test Render</h1>
         <form id="editCompanyForm">
           <label><strong>Nama:</strong></label><br>
           <input type="text" value="${company.company_name}" disabled><br><br>
