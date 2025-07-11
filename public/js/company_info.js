@@ -3,9 +3,7 @@ function loadSyarikatInfo() {
 
   fetch('/api/company-info')
     .then(res => {
-      if (!res.ok) {
-        throw new Error('HTTP status bukan 200');
-      }
+      if (!res.ok) throw new Error('HTTP status bukan 200');
       return res.json();
     })
     .then(data => {
@@ -20,22 +18,22 @@ function loadSyarikatInfo() {
 
       let html = `
         <form id="editCompanyForm">
-        <label><strong>Nama:</strong></label><br>
-        <input type="text" value="${company.company_name}" disabled><br><br>
+          <label><strong>Nama:</strong></label><br>
+          <input type="text" value="${company.company_name}" disabled><br><br>
 
-        <label><strong>Alamat:</strong></label><br>
-        <input type="text" name="address" value="${company.address || ''}"><br><br>
+          <label><strong>Alamat:</strong></label><br>
+          <input type="text" name="address" value="${company.address || ''}"><br><br>
 
-        <label><strong>Email:</strong></label><br>
-        <input type="email" name="email" value="${company.email || ''}"><br><br>
+          <label><strong>Email:</strong></label><br>
+          <input type="email" name="email" value="${company.email || ''}"><br><br>
 
-        <label><strong>Telefon:</strong></label><br>
-        <input type="text" name="phone" value="${company.phone || ''}"><br><br>
+          <label><strong>Telefon:</strong></label><br>
+          <input type="text" name="phone" value="${company.phone || ''}"><br><br>
 
-        <label><strong>About:</strong></label><br>
-        <textarea name="about" rows="3">${company.about || ''}</textarea><br><br>
+          <label><strong>About:</strong></label><br>
+          <textarea name="about" rows="3">${company.about || ''}</textarea><br><br>
 
-        <button type="submit">💾 Simpan</button>
+          <button type="submit">💾 Simpan</button>
         </form>
         <div id="updateStatus" style="margin-top:10px;"></div>
 
@@ -43,9 +41,9 @@ function loadSyarikatInfo() {
 
         <h3>📌 Info Tambahan</h3>
         <ul id="extraInfos">
-          ${extraInfos.length === 0 ? '<li>Tiada info tambahan</li>' :
-            extraInfos.map(info => `<li><strong>${info.label}:</strong> ${info.value}</li>`).join('')
-          }
+          ${extraInfos.length === 0
+            ? '<li>Tiada info tambahan</li>'
+            : extraInfos.map(info => `<li><strong>${info.label}:</strong> ${info.value}</li>`).join('')}
         </ul>
 
         <h4 style="margin-top:20px;">➕ Tambah Info</h4>
@@ -65,10 +63,10 @@ function loadSyarikatInfo() {
         <div id="leaveStatus" style="margin-top:10px;"></div>
       `;
 
-      // Masukkan dalam panel
+      // 1. Masukkan HTML ke center-panel
       document.querySelector('.center-panel').innerHTML = html;
 
-      // 🎯 Simpan maklumat syarikat
+      // 2. Listener untuk kemaskini maklumat asas syarikat
       document.getElementById('editCompanyForm').addEventListener('submit', function (e) {
         e.preventDefault();
         const formData = new FormData(this);
@@ -84,7 +82,7 @@ function loadSyarikatInfo() {
             const box = document.getElementById('updateStatus');
             if (result.success) {
               box.textContent = '✅ Maklumat berjaya dikemaskini.';
-              loadSyarikatInfo(); // Reload
+              loadSyarikatInfo(); // Reload panel
             } else {
               box.textContent = '❌ ' + (result.message || 'Gagal kemaskini.');
             }
@@ -95,14 +93,11 @@ function loadSyarikatInfo() {
           });
       });
 
-      // ➕ Tambah info syarikat
+      // 3. Listener untuk tambah info tambahan
       document.getElementById('addCompanyInfoForm').addEventListener('submit', function (e) {
         e.preventDefault();
-
         const formData = new FormData(this);
         const infoData = Object.fromEntries(formData.entries());
-
-        console.log('📤 Menghantar info tambahan:', infoData); // Debug
 
         fetch('/api/add-company-info', {
           method: 'POST',
@@ -114,7 +109,7 @@ function loadSyarikatInfo() {
             const box = document.getElementById('addInfoStatus');
             if (result.success) {
               box.textContent = '✅ Info berjaya ditambah.';
-              loadSyarikatInfo(); // Reload panel
+              loadSyarikatInfo(); // Reload untuk nampakkan info baru
             } else {
               box.textContent = '❌ ' + (result.message || 'Gagal tambah info.');
             }
@@ -125,10 +120,10 @@ function loadSyarikatInfo() {
           });
       });
 
-      // 🚪 Keluar dari syarikat
+      // 4. Listener untuk keluar dari syarikat
       document.getElementById('btnLeaveCompany').addEventListener('click', () => {
         if (confirm('Adakah anda pasti mahu keluar dari syarikat ini?')) {
-          leaveCompany();
+          leaveCompany(); // Pastikan leaveCompany() wujud
         }
       });
     })
