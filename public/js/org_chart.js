@@ -1,58 +1,65 @@
 // org_chart.js
 
-async function loadOrgChart() {
-  const center = document.querySelector('.center-panel');
-  center.innerHTML = `<h2>📊 Carta Organisasi</h2><div id="orgTreeContainer"></div>`;
+function loadOrgChart() {
+  fetch('/api/org-chart/get')
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        document.querySelector('.center-panel').innerHTML = '<h2>📊 Carta Organisasi</h2><p>Tiada data carta organisasi.</p>';
+        return;
+      }
 
-  try {
-    const res = await fetch('/api/org-chart/get');
-    const data = await res.json();
+      const orgData = data.data;
+      if (!orgData || orgData.length === 0) {
+        document.querySelector('.center-panel').innerHTML = '<h2>📊 Carta Organisasi</h2><p>Tiada data carta organisasi.</p>';
+        return;
+      }
 
-    if (!data.success || !Array.isArray(data.chart)) {
-      center.innerHTML += `<p>Tiada data carta organisasi.</p>`;
-      return;
-    }
+      // Susun data jadi bentuk bersarang
+      const nodeMap = {};
+      orgData.forEach(item => {
+        nodeMap[item.user_id] = { ...item, children: [] };
+      });
 
-    const chartData = buildOrgTree(data.chart);
-    const treeHTML = renderOrgNode(chartData);
-    document.getElementById('orgTreeContainer').innerHTML = treeHTML;
-  } catch (err) {
-    console.error(err);
-    center.innerHTML += `<p>Ralat ketika memuatkan carta organisasi.</p>`;
-  }
+      const roots = [];
+      orgData.forEach(item => {
+        if (item.parent_id && nodeMap[item.parent_id]) {
+          nodeMap[item.parent_id].children.push(nodeMap[item.user_id]);
+        } else {
+          roots.push(nodeMap[item.user_id]);
+        }
+      });
+
+      // Function render (recursive)
+      function renderNode(node) {
+        const childrenHtml = node.children.map(child => renderNode(child)).join('');
+
+        return `
+          <div class="org-node">
+            <div class="org-box">
+              <strong>${node.position}</strong><br/>
+              ${node.fullname}
+            </div>
+            ${node.children.length > 0 ? `<div class="org-children">${childrenHtml}</div>` : ''}
+          </div>
+        `;
+      }
+
+      const chartHTML = roots.map(root => renderNode(root)).join('');
+
+      document.querySelector('.center-panel').innerHTML = `
+        <h2>📊 Carta Organisasi</h2>
+        <div style="overflow-x: auto;">
+          ${chartHTML}
+        </div>
+      `;
+    })
+    .catch(err => {
+      console.error("Gagal ambil carta organisasi:", err);
+      document.querySelector('.center-panel').innerHTML = '<h2>📊 Carta Organisasi</h2><p>Gagal paparkan carta.</p>';
+    });
 }
 
-function buildOrgTree(list) {
-  const map = {}, roots = [];
-  list.forEach(item => map[item.id] = { ...item, children: [] });
-  list.forEach(item => {
-    if (item.parent_id && map[item.parent_id]) {
-      map[item.parent_id].children.push(map[item.id]);
-    } else {
-      roots.push(map[item.id]);
-    }
-  });
-  return roots.length === 1 ? roots[0] : { fullname: 'Root', position: '', children: roots };
-}
-
-function renderOrgNode(node) {
-  if (!node) return '';
-
-  const name = node.fullname || '-';
-  const position = node.position || '';
-
-  const childrenHTML = (node.children || []).map(renderOrgNode).join('');
-  const hasChildren = (node.children || []).length > 0;
-
-  return `
-    <div class="org-node">
-      <div class="org-box">
-        <strong>${position}</strong><br>${name}
-      </div>
-      ${hasChildren ? `<div class="org-children">${childrenHTML}</div>` : ''}
-    </div>
-  `;
-}
 //function loadOrgChart() {
   //const center = document.querySelector('.center-panel');
   //center.innerHTML = `
