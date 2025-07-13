@@ -64,4 +64,38 @@ router.get('/get', async (req, res) => {
   }
 });
 
+router.get('/company-members', async (req, res) => {
+  const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
+
+  if (!currentUser || !currentUser.company_id) {
+    return res.json({ success: false, message: "Tidak dibenarkan." });
+  }
+
+  try {
+    const [rows] = await pool.query(`
+      SELECT 
+        u.id, u.email, u.first_name, u.last_name, u.is_admin,
+        o.position, o.department, o.parent_id
+      FROM users u
+      LEFT JOIN org_chart o ON o.user_id = u.id AND o.company_id = ?
+      WHERE u.company_id = ?
+    `, [currentUser.company_id, currentUser.company_id]);
+
+    const members = rows.map(user => ({
+      id: user.id,
+      email: user.email,
+      fullname: `${user.first_name} ${user.last_name}`,
+      is_admin: user.is_admin === '1',
+      position: user.position || '',
+      department: user.department || '',
+      parent_id: user.parent_id || ''
+    }));
+
+    res.json({ success: true, members });
+  } catch (err) {
+    console.error("Gagal ambil ahli syarikat:", err);
+    res.json({ success: false, message: "Ralat server." });
+  }
+});
+
 module.exports = router;
