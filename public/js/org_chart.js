@@ -4,12 +4,20 @@ function loadOrgChart() {
   fetch('/api/org-chart/get')
     .then(res => res.json())
     .then(data => {
-      if (!data.success || !data.data || data.data.length === 0) {
+      if (!data.success) {
         document.querySelector('.center-panel').innerHTML = '<h2>📊 Carta Organisasi</h2><p>Tiada data carta organisasi.</p>';
         return;
       }
 
-      const orgData = data.data;
+      let orgData = data.data;
+
+      // ✅ Tapis keluar yang parent_user_id === 'NONE'
+      orgData = orgData.filter(item => item.parent_user_id !== 'NONE');
+
+      if (!orgData || orgData.length === 0) {
+        document.querySelector('.center-panel').innerHTML = '<h2>📊 Carta Organisasi</h2><p>Tiada data carta organisasi.</p>';
+        return;
+      }
 
       const nodeMap = {};
       const roots = [];
