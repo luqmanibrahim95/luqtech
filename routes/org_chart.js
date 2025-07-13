@@ -52,8 +52,7 @@ router.get('/get', async (req, res) => {
       `SELECT oc.*, u.fullname 
        FROM org_chart oc
        JOIN users u ON u.id = oc.user_id
-       WHERE oc.company_id = ?
-      `,
+       WHERE oc.company_id = ?`,
       [currentUser.company_id]
     );
 
@@ -64,6 +63,7 @@ router.get('/get', async (req, res) => {
   }
 });
 
+// ✅ Ambil senarai ahli syarikat dengan jawatan, department & parent
 router.get('/company-members', async (req, res) => {
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
