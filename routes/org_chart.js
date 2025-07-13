@@ -3,7 +3,7 @@ const router = express.Router();
 const pool = require('../db/db');
 
 // ✅ Simpan atau update maklumat carta organisasi
-router.post('/update-org-info', async (req, res) => {
+router.post('/save-org-info', async (req, res) => {
   const { user_id, position, department, parent_id } = req.body;
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
@@ -12,20 +12,20 @@ router.post('/update-org-info', async (req, res) => {
   }
 
   try {
-    // Semak kalau entri user_id untuk syarikat ini dah wujud
+    // Semak kalau user ini sudah wujud dalam carta syarikat
     const [existing] = await pool.query(
       'SELECT id FROM org_chart WHERE user_id = ? AND company_id = ?',
       [user_id, currentUser.company_id]
     );
 
     if (existing.length > 0) {
-      // Update
+      // ✅ Update data
       await pool.query(
         'UPDATE org_chart SET position = ?, department = ?, parent_id = ? WHERE user_id = ? AND company_id = ?',
         [position, department, parent_id || null, user_id, currentUser.company_id]
       );
     } else {
-      // Insert
+      // ✅ Insert data baru
       await pool.query(
         'INSERT INTO org_chart (user_id, company_id, position, department, parent_id) VALUES (?, ?, ?, ?, ?)',
         [user_id, currentUser.company_id, position, department, parent_id || null]

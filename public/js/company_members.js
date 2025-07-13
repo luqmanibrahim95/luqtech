@@ -99,7 +99,7 @@ function saveOrgInfo(userId) {
   const department = document.getElementById(`department_${userId}`).value.trim();
   const parentId = document.getElementById(`parent_${userId}`).value || null;
 
-  fetch('/api/update-org-info', {
+  fetch('/api/org-chart/save-org-info', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -112,12 +112,13 @@ function saveOrgInfo(userId) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert("Maklumat jawatan berjaya disimpan.");
+        alert("Maklumat jawatan berjaya disimpan!");
       } else {
         alert(data.message || "Gagal simpan maklumat.");
       }
     })
     .catch(err => {
+      console.error('Ralat:', err);
       alert("Ralat ketika menghantar maklumat.");
     });
 }
