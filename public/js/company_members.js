@@ -113,12 +113,29 @@ function saveOrgInfo(userId) {
   const department = document.getElementById(`department_${userId}`).value.trim();
   let parentId = document.getElementById(`parent_${userId}`).value;
 
+  // ✅ Logik baru
   if (parentId === "ROOT") {
-    parentId = null; // Jadikan root
-  } else if (parentId === "") {
-    parentId = "NONE"; // Abaikan dari carta
+    parentId = null; // Jadi root dalam carta
+  } else if (parentId === "NONE") {
+    // ❌ Hapus dari carta
+    fetch('/api/org-chart/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Pengguna dikeluarkan dari carta organisasi.");
+        loadCompanyMembers(); // reload semula
+      } else {
+        alert(data.message || "Gagal padam dari carta.");
+      }
+    });
+    return;
   }
 
+  // ✅ Terus simpan kalau bukan NONE
   fetch('/api/org-chart/save-org-info', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -133,7 +150,6 @@ function saveOrgInfo(userId) {
     .then(data => {
       if (data.success) {
         alert("Maklumat jawatan berjaya disimpan!");
-        loadCompanyMembers(); // refresh view
       } else {
         alert(data.message || "Gagal simpan maklumat.");
       }
@@ -143,3 +159,4 @@ function saveOrgInfo(userId) {
       alert("Ralat ketika menghantar maklumat.");
     });
 }
+
