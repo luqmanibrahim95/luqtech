@@ -208,10 +208,10 @@ body {
 }
 
 .org-node {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
   padding: 10px;
 }
 
@@ -224,6 +224,18 @@ body {
   min-width: 150px;
   text-align: center;
   font-size: 14px;
+  position: relative;
+}
+
+.org-box::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 20px;
+  background: #999;
 }
 
 .org-children {
@@ -237,7 +249,7 @@ body {
 .org-children::before {
   content: '';
   position: absolute;
-  top: -15px;
+  top: 0;
   left: 0;
   right: 0;
   height: 2px;
@@ -248,55 +260,12 @@ body {
   content: '';
   position: absolute;
   top: -20px;
+  left: 50%;
   width: 2px;
   height: 20px;
   background: #999;
+  transform: translateX(-50%);
 }
 
-.org-node {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  padding: 10px;
-}
-
-.org-box {
-  border: 2px solid #444;
-  border-radius: 10px;
-  padding: 10px 15px;
-  background: #f2f2f2;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  min-width: 150px;
-  text-align: center;
-  font-size: 14px;
-}
-
-.org-children {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 30px;
-  position: relative;
-}
-
-.org-children::before {
-  content: '';
-  position: absolute;
-  top: -15px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #999;
-}
-
-.org-node:not(:only-child)::before {
-  content: '';
-  position: absolute;
-  top: -20px;
-  width: 2px;
-  height: 20px;
-  background: #999;
-}
 
 
