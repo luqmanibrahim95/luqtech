@@ -11,34 +11,35 @@ router.post('/save-org-info', async (req, res) => {
     return res.status(403).json({ success: false, message: "Tidak dibenarkan." });
   }
 
-  // ✅ Tukar nilai khas
-  if (parent_user_id === "NONE") {
-    try {
+  try {
+    // ❗ Kalau "NONE", padam terus user dari carta
+    if (parent_user_id === "NONE") {
       await pool.query(
         'DELETE FROM org_chart WHERE user_id = ? AND company_id = ?',
         [user_id, currentUser.company_id]
       );
       return res.json({ success: true });
-    } catch (err) {
-      console.error('Ralat padam org_chart:', err);
-      return res.status(500).json({ success: false, message: "Ralat server (padam)." });
     }
-  } else if (parent_user_id === "ROOT" || parent_user_id === "" || parent_user_id === undefined) {
-    parent_user_id = null;
-  }
 
-  try {
+    // ✅ Tukar "ROOT" atau kosong kepada null
+    if (!parent_user_id || parent_user_id === "ROOT") {
+      parent_user_id = null;
+    }
+
+    // ✅ Semak jika user sudah wujud dalam carta
     const [existing] = await pool.query(
       'SELECT id FROM org_chart WHERE user_id = ? AND company_id = ?',
       [user_id, currentUser.company_id]
     );
 
     if (existing.length > 0) {
+      // ✅ Kemas kini sedia ada
       await pool.query(
         'UPDATE org_chart SET position = ?, department = ?, parent_user_id = ? WHERE user_id = ? AND company_id = ?',
         [position, department, parent_user_id, user_id, currentUser.company_id]
       );
     } else {
+      // ✅ Masukkan data baru
       await pool.query(
         'INSERT INTO org_chart (user_id, company_id, position, department, parent_user_id) VALUES (?, ?, ?, ?, ?)',
         [user_id, currentUser.company_id, position, department, parent_user_id]
@@ -76,7 +77,7 @@ router.get('/get', async (req, res) => {
   }
 });
 
-// ✅ Ambil senarai ahli syarikat
+// ✅ Ambil senarai ahli syarikat + info carta
 router.get('/company-members', async (req, res) => {
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
@@ -96,6 +97,7 @@ router.get('/company-members', async (req, res) => {
 
     const members = rows.map(user => {
       const hasOrg = user.position || user.department || user.parent_user_id !== null;
+
       return {
         id: user.id,
         email: user.email,
@@ -103,10 +105,9 @@ router.get('/company-members', async (req, res) => {
         is_admin: user.is_admin === '1',
         position: user.position || '',
         department: user.department || '',
-        parent_user_id:
-          hasOrg && user.parent_user_id === null
-            ? 'ROOT'
-            : user.parent_user_id || ''
+        parent_user_id: hasOrg
+          ? (user.parent_user_id === null ? 'ROOT' : user.parent_user_id)
+          : 'NONE'
       };
     });
 
@@ -117,7 +118,7 @@ router.get('/company-members', async (req, res) => {
   }
 });
 
-// ✅ Padam dari carta organisasi
+// ✅ Padam dari carta organisasi (fallback jika perlu)
 router.post('/delete', async (req, res) => {
   const { user_id } = req.body;
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
