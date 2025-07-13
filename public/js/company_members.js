@@ -7,7 +7,6 @@ function loadCompanyMembers() {
     .then(data => {
       const currentUser = data.user;
 
-      // ✅ Ubah sini, ambil dari route yang betul
       fetch('/api/org-chart/company-members')
         .then(res => res.json())
         .then(data => {
@@ -30,13 +29,14 @@ function loadCompanyMembers() {
                   <button onclick="promoteToAdmin(${member.id})">🚀 Jadikan Admin</button>
                   <button onclick="removeMember(${member.id})">❌</button>
                 ` : ''}
-                
+
                 <div style="margin-top: 5px; padding-left: 15px;">
                   Jawatan: <input type="text" id="position_${member.id}" value="${member.position || ''}" placeholder="Contoh: Pengurus"/><br>
                   Department: <input type="text" id="department_${member.id}" value="${member.department || ''}" placeholder="Contoh: Operasi"/><br>
                   Lapor kepada: 
                   <select id="parent_${member.id}">
                     <option value="">-- Tiada --</option>
+                    <option value="ROOT">⬆️ Higher Authority</option>
                     ${options.replace(`value="${member.id}"`, `value="${member.id}" disabled`)}
                   </select>
                   <button onclick="saveOrgInfo(${member.id})">💾 Simpan</button>
@@ -50,14 +50,18 @@ function loadCompanyMembers() {
             <ul>${list}</ul>
           `;
 
-          // ✅ Isikan balik parent_user_id dalam dropdown
+          // Isikan balik parent_user_id dalam dropdown
           members.forEach(member => {
             const select = document.getElementById(`parent_${member.id}`);
-            if (select && member.parent_user_id) {
-              select.value = member.parent_user_id;
+            if (select) {
+              if (member.parent_user_id === null) {
+                select.value = "ROOT";
+              } else if (member.parent_user_id !== '') {
+                select.value = member.parent_user_id;
+              }
+              // Kalau kosong & bukan root, biarkan default
             }
           });
-
         });
     })
     .catch(err => {
@@ -107,7 +111,13 @@ function promoteToAdmin(userId) {
 function saveOrgInfo(userId) {
   const position = document.getElementById(`position_${userId}`).value.trim();
   const department = document.getElementById(`department_${userId}`).value.trim();
-  const parentId = document.getElementById(`parent_${userId}`).value || null;
+  let parentId = document.getElementById(`parent_${userId}`).value;
+
+  if (parentId === "ROOT") {
+    parentId = null; // Jadikan root
+  } else if (parentId === "") {
+    parentId = "NONE"; // Abaikan dari carta
+  }
 
   fetch('/api/org-chart/save-org-info', {
     method: 'POST',
@@ -123,6 +133,7 @@ function saveOrgInfo(userId) {
     .then(data => {
       if (data.success) {
         alert("Maklumat jawatan berjaya disimpan!");
+        loadCompanyMembers(); // refresh view
       } else {
         alert(data.message || "Gagal simpan maklumat.");
       }
@@ -132,4 +143,3 @@ function saveOrgInfo(userId) {
       alert("Ralat ketika menghantar maklumat.");
     });
 }
-

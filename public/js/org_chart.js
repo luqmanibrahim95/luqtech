@@ -1,4 +1,4 @@
-// org_chart.js
+// ✅ public/js/org_chart.js
 
 function loadOrgChart() {
   fetch('/api/org-chart/get')
@@ -9,29 +9,31 @@ function loadOrgChart() {
         return;
       }
 
-      const orgData = data.data;
+      let orgData = data.data;
+
+      // ✅ Tapis keluar yang parent_user_id === 'NONE'
+      orgData = orgData.filter(item => item.parent_user_id !== 'NONE');
+
       if (!orgData || orgData.length === 0) {
         document.querySelector('.center-panel').innerHTML = '<h2>📊 Carta Organisasi</h2><p>Tiada data carta organisasi.</p>';
         return;
       }
 
-      // Susun data jadi bentuk bersarang
       const nodeMap = {};
-      const roots = []; // ✅ TAMBAH INI
+      const roots = [];
 
       orgData.forEach(item => {
-      nodeMap[item.user_id] = { ...item, children: [] };
+        nodeMap[item.user_id] = { ...item, children: [] };
       });
 
       orgData.forEach(item => {
-      if (item.parent_user_id && nodeMap[item.parent_user_id]) {
-        nodeMap[item.parent_user_id].children.push(nodeMap[item.user_id]);
-      } else {
-        roots.push(nodeMap[item.user_id]);
-      }
+        if (item.parent_user_id && nodeMap[item.parent_user_id]) {
+          nodeMap[item.parent_user_id].children.push(nodeMap[item.user_id]);
+        } else {
+          roots.push(nodeMap[item.user_id]);
+        }
       });
 
-      // Function render (recursive)
       function renderNode(node) {
         const childrenHtml = node.children.map(child => renderNode(child)).join('');
 
