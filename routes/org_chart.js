@@ -11,35 +11,34 @@ router.post('/save-org-info', async (req, res) => {
     return res.status(403).json({ success: false, message: "Tidak dibenarkan." });
   }
 
-  try {
-    // ❗ Kalau "NONE", padam dari carta terus
-    if (parent_user_id === "NONE") {
+  // ✅ Tukar nilai khas
+  if (parent_user_id === "NONE") {
+    try {
       await pool.query(
         'DELETE FROM org_chart WHERE user_id = ? AND company_id = ?',
         [user_id, currentUser.company_id]
       );
       return res.json({ success: true });
+    } catch (err) {
+      console.error('Ralat padam org_chart:', err);
+      return res.status(500).json({ success: false, message: "Ralat server (padam)." });
     }
+  } else if (parent_user_id === "ROOT" || parent_user_id === "" || parent_user_id === undefined) {
+    parent_user_id = null;
+  }
 
-    // Tukar "ROOT" kepada null
-    if (parent_user_id === "ROOT") {
-      parent_user_id = null;
-    }
-
-    // Semak jika user dah ada dalam carta
+  try {
     const [existing] = await pool.query(
       'SELECT id FROM org_chart WHERE user_id = ? AND company_id = ?',
       [user_id, currentUser.company_id]
     );
 
     if (existing.length > 0) {
-      // Update data
       await pool.query(
         'UPDATE org_chart SET position = ?, department = ?, parent_user_id = ? WHERE user_id = ? AND company_id = ?',
         [position, department, parent_user_id, user_id, currentUser.company_id]
       );
     } else {
-      // Insert data baru
       await pool.query(
         'INSERT INTO org_chart (user_id, company_id, position, department, parent_user_id) VALUES (?, ?, ?, ?, ?)',
         [user_id, currentUser.company_id, position, department, parent_user_id]
@@ -96,21 +95,20 @@ router.get('/company-members', async (req, res) => {
     `, [currentUser.company_id, currentUser.company_id]);
 
     const members = rows.map(user => {
-        const hasOrg = user.position || user.department || user.parent_user_id !== null;
-
-        return {
-            id: user.id,
-            email: user.email,
-            fullname: `${user.first_name} ${user.last_name}`,
-            is_admin: user.is_admin === '1',
-            position: user.position || '',
-            department: user.department || '',
-            parent_user_id:
-            hasOrg && user.parent_user_id === null
-                ? 'ROOT'
-                : user.parent_user_id || ''
-        };
-        });
+      const hasOrg = user.position || user.department || user.parent_user_id !== null;
+      return {
+        id: user.id,
+        email: user.email,
+        fullname: `${user.first_name} ${user.last_name}`,
+        is_admin: user.is_admin === '1',
+        position: user.position || '',
+        department: user.department || '',
+        parent_user_id:
+          hasOrg && user.parent_user_id === null
+            ? 'ROOT'
+            : user.parent_user_id || ''
+      };
+    });
 
     res.json({ success: true, members });
   } catch (err) {
