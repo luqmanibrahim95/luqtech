@@ -17,17 +17,18 @@ function loadOrgChart() {
 
       // Susun data jadi bentuk bersarang
       const nodeMap = {};
+      const roots = []; // ✅ TAMBAH INI
+
       orgData.forEach(item => {
-        nodeMap[item.user_id] = { ...item, children: [] };
+      nodeMap[item.user_id] = { ...item, children: [] };
       });
 
-      const roots = [];
       orgData.forEach(item => {
-        if (item.parent_id && nodeMap[item.parent_id]) {
-          nodeMap[item.parent_id].children.push(nodeMap[item.user_id]);
-        } else {
-          roots.push(nodeMap[item.user_id]);
-        }
+      if (item.parent_user_id && nodeMap[item.parent_user_id]) {
+        nodeMap[item.parent_user_id].children.push(nodeMap[item.user_id]);
+      } else {
+        roots.push(nodeMap[item.user_id]);
+      }
       });
 
       // Function render (recursive)
@@ -37,8 +38,8 @@ function loadOrgChart() {
         return `
           <div class="org-node">
             <div class="org-box">
-              <strong>${node.position}</strong><br/>
-              ${node.fullname}
+              <strong>${node.position || '(Jawatan tidak ditetapkan)'}</strong><br/>
+              ${node.fullname || '(Tiada nama)'}
             </div>
             ${node.children.length > 0 ? `<div class="org-children">${childrenHtml}</div>` : ''}
           </div>
