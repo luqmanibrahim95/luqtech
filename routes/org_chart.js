@@ -39,4 +39,29 @@ router.post('/save-org-info', async (req, res) => {
   }
 });
 
+// ✅ Ambil carta organisasi syarikat
+router.get('/get', async (req, res) => {
+  const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
+
+  if (!currentUser || !currentUser.company_id) {
+    return res.status(403).json({ success: false, message: "Tidak dibenarkan." });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT oc.*, u.fullname 
+       FROM org_chart oc
+       JOIN users u ON u.id = oc.user_id
+       WHERE oc.company_id = ?
+      `,
+      [currentUser.company_id]
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Ralat ambil carta organisasi:', err);
+    res.status(500).json({ success: false, message: "Ralat server." });
+  }
+});
+
 module.exports = router;
