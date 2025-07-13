@@ -1,4 +1,4 @@
-//dashoard.js
+// dashboard.js
 // ============================
 // PART 1: Load User Info
 // ============================
@@ -28,6 +28,14 @@ window.addEventListener('DOMContentLoaded', () => {
             alert("Modul belum dimuatkan.");
           }
         });
+
+        // ✅ Tambah Carta Organisasi (untuk semua user yg ada syarikat)
+        const panel = document.querySelector('.left-panel');
+        const btnCarta = document.createElement('button');
+        btnCarta.textContent = "📊 Carta Organisasi";
+        btnCarta.onclick = loadOrgChart;
+        panel.appendChild(document.createElement('br'));
+        panel.appendChild(btnCarta);
       } else {
         document.getElementById('user-company').innerHTML = `Syarikat: <a href="#" id="linkCariSyarikat">Tiada</a>`;
         document.getElementById('linkCariSyarikat').addEventListener('click', (e) => {
@@ -40,11 +48,11 @@ window.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      // Simpan global
+      // ✅ Simpan global
       window.isAdmin = user.is_admin;
       window.companyId = user.company_id;
 
-      // Tunjuk butang admin
+      // ✅ Butang admin khas
       if (user.is_admin && user.company_id) {
         const panel = document.querySelector('.left-panel');
 
@@ -61,11 +69,10 @@ window.addEventListener('DOMContentLoaded', () => {
         panel.appendChild(btnAhli);
       }
 
-      // Papar calendar terus
+      // ✅ Auto buka calendar
       if (typeof loadPlanningCalendar === 'function') {
         loadPlanningCalendar();
       }
-
     })
     .catch(err => {
       console.warn('Sesi tamat, redirect ke login.');

@@ -416,4 +416,15 @@ router.post('/delete-company-info', async (req, res) => {
   }
 });
 
+router.get('/org-chart', async (req, res) => {
+  const user = req.user;
+  if (!user || !user.company_id) {
+    return res.json({ success: false, message: "Anda belum menyertai syarikat." });
+  }
+
+  // Dummy dulu
+  res.json({ success: true, chart: [] });
+});
+
+
 module.exports = router;
