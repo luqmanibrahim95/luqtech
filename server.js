@@ -45,6 +45,7 @@ const planningRoutes = require('./routes/planning');
 app.use('/api', companyRoutes);
 app.use('/api', authRoutes);
 app.use('/api', planningRoutes);
+app.use('/api/org-chart', require('./routes/org_chart'));
 
 // Start server
 app.listen(PORT, () => {
