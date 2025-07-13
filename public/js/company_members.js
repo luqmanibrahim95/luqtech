@@ -50,11 +50,11 @@ function loadCompanyMembers() {
             <ul>${list}</ul>
           `;
 
-          // ✅ Isikan balik parent_id dalam dropdown
+          // ✅ Isikan balik parent_user_id dalam dropdown
           members.forEach(member => {
             const select = document.getElementById(`parent_${member.id}`);
-            if (select && member.parent_id) {
-              select.value = member.parent_id;
+            if (select && member.parent_user_id) {
+              select.value = member.parent_user_id;
             }
           });
 
@@ -116,7 +116,7 @@ function saveOrgInfo(userId) {
       user_id: userId,
       position,
       department,
-      parent_id: parentId
+      parent_user_id: parentId
     })
   })
     .then(res => res.json())

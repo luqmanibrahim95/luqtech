@@ -4,7 +4,7 @@ const pool = require('../db/db');
 
 // ✅ Simpan atau update maklumat carta organisasi
 router.post('/save-org-info', async (req, res) => {
-  const { user_id, position, department, parent_id } = req.body;
+  const { user_id, position, department, parent_user_id } = req.body;
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
   if (!currentUser || !currentUser.company_id) {
@@ -21,14 +21,14 @@ router.post('/save-org-info', async (req, res) => {
     if (existing.length > 0) {
       // ✅ Update data
       await pool.query(
-        'UPDATE org_chart SET position = ?, department = ?, parent_id = ? WHERE user_id = ? AND company_id = ?',
-        [position, department, parent_id || null, user_id, currentUser.company_id]
+        'UPDATE org_chart SET position = ?, department = ?, parent_user_id = ? WHERE user_id = ? AND company_id = ?',
+        [position, department, parent_user_id || null, user_id, currentUser.company_id]
       );
     } else {
       // ✅ Insert data baru
       await pool.query(
-        'INSERT INTO org_chart (user_id, company_id, position, department, parent_id) VALUES (?, ?, ?, ?, ?)',
-        [user_id, currentUser.company_id, position, department, parent_id || null]
+        'INSERT INTO org_chart (user_id, company_id, position, department, parent_user_id) VALUES (?, ?, ?, ?, ?)',
+        [user_id, currentUser.company_id, position, department, parent_user_id || null]
       );
     }
 
@@ -75,7 +75,7 @@ router.get('/company-members', async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         u.id, u.email, u.first_name, u.last_name, u.is_admin,
-        o.position, o.department, o.parent_id
+        o.position, o.department, o.parent_user_id
       FROM users u
       LEFT JOIN org_chart o ON o.user_id = u.id AND o.company_id = ?
       WHERE u.company_id = ?
@@ -88,7 +88,7 @@ router.get('/company-members', async (req, res) => {
       is_admin: user.is_admin === '1',
       position: user.position || '',
       department: user.department || '',
-      parent_id: user.parent_id || ''
+      parent_user_id: user.parent_user_id || ''
     }));
 
     res.json({ success: true, members });
