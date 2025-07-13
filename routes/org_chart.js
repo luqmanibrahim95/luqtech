@@ -96,13 +96,13 @@ router.get('/company-members', async (req, res) => {
     `, [currentUser.company_id, currentUser.company_id]);
 
     const members = rows.map(user => ({
-      id: user.id,
-      email: user.email,
-      fullname: `${user.first_name} ${user.last_name}`,
-      is_admin: user.is_admin === '1',
-      position: user.position || '',
-      department: user.department || '',
-      parent_user_id: user.parent_user_id || ''
+    id: user.id,
+    email: user.email,
+    fullname: `${user.first_name} ${user.last_name}`,
+    is_admin: user.is_admin === '1',
+    position: user.position || '',
+    department: user.department || '',
+    parent_user_id: user.parent_user_id === null ? 'ROOT' : user.parent_user_id || ''
     }));
 
     res.json({ success: true, members });
