@@ -65,10 +65,3 @@
   </script>
 </body>
 </html>
-
-if (!user) {
-  res.redirect('/');
-  return;
-}
-res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-
