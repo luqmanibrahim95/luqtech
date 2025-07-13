@@ -7,7 +7,8 @@ function loadCompanyMembers() {
     .then(data => {
       const currentUser = data.user;
 
-      fetch('/api/company-members')
+      // ✅ Ubah sini, ambil dari route yang betul
+      fetch('/api/org-chart/company-members')
         .then(res => res.json())
         .then(data => {
           if (!data.success) {
@@ -48,6 +49,15 @@ function loadCompanyMembers() {
             <h2>👥 Ahli Syarikat</h2>
             <ul>${list}</ul>
           `;
+
+          // ✅ Isikan balik parent_id dalam dropdown
+          members.forEach(member => {
+            const select = document.getElementById(`parent_${member.id}`);
+            if (select && member.parent_id) {
+              select.value = member.parent_id;
+            }
+          });
+
         });
     })
     .catch(err => {
