@@ -49,7 +49,7 @@ router.get('/get', async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-      `SELECT oc.*, u.fullname 
+      `SELECT oc.*, CONCAT(u.first_name, ' ', u.last_name) AS fullname
        FROM org_chart oc
        JOIN users u ON u.id = oc.user_id
        WHERE oc.company_id = ?`,
