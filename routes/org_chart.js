@@ -96,7 +96,7 @@ router.get('/company-members', async (req, res) => {
     `, [currentUser.company_id, currentUser.company_id]);
 
     const members = rows.map(user => {
-      const hasOrg = user.position || user.department || user.parent_user_id !== null;
+      const inOrgChart = user.position || user.department || user.parent_user_id !== null;
 
       return {
         id: user.id,
@@ -105,9 +105,9 @@ router.get('/company-members', async (req, res) => {
         is_admin: user.is_admin === '1',
         position: user.position || '',
         department: user.department || '',
-        parent_user_id: hasOrg
-          ? (user.parent_user_id === null ? 'ROOT' : user.parent_user_id)
-          : 'NONE'
+        parent_user_id: !inOrgChart
+          ? 'NONE'
+          : (user.parent_user_id === null ? 'ROOT' : user.parent_user_id)
       };
     });
 
