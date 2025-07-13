@@ -96,7 +96,10 @@ router.get('/company-members', async (req, res) => {
     `, [currentUser.company_id, currentUser.company_id]);
 
     const members = rows.map(user => {
-      const inOrgChart = user.position || user.department || user.parent_user_id !== null;
+      const inOrgChart =
+        user.position !== null ||
+        user.department !== null ||
+        user.parent_user_id !== null;
 
       return {
         id: user.id,

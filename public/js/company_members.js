@@ -35,8 +35,8 @@ function loadCompanyMembers() {
                   Department: <input type="text" id="department_${member.id}" value="${member.department || ''}" placeholder="Contoh: Operasi"/><br>
                   Lapor kepada: 
                   <select id="parent_${member.id}">
-                    <option value="">-- Tiada --</option>
-                    <option value="ROOT">⬆️ Higher Authority</option>
+                    <option value="NONE">Tiada</option>
+                    <option value="ROOT">Higher Authority</option>
                     ${options.replace(`value="${member.id}"`, `value="${member.id}" disabled`)}
                   </select>
                   <button onclick="saveOrgInfo(${member.id})">💾 Simpan</button>
