@@ -4,31 +4,35 @@ const pool = require('../db/db');
 
 // ✅ Simpan atau update maklumat carta organisasi
 router.post('/save-org-info', async (req, res) => {
-  const { user_id, position, department, parent_user_id } = req.body;
+  let { user_id, position, department, parent_user_id } = req.body;
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
   if (!currentUser || !currentUser.company_id) {
     return res.status(403).json({ success: false, message: "Tidak dibenarkan." });
   }
 
+  // Tukar parent_user_id ikut nilai khas:
+  if (parent_user_id === "ROOT") {
+    parent_user_id = null;
+  } else if (parent_user_id === "NONE") {
+    parent_user_id = "NONE"; // akan ditapis waktu paparan
+  }
+
   try {
-    // Semak kalau user ini sudah wujud dalam carta syarikat
     const [existing] = await pool.query(
       'SELECT id FROM org_chart WHERE user_id = ? AND company_id = ?',
       [user_id, currentUser.company_id]
     );
 
     if (existing.length > 0) {
-      // ✅ Update data
       await pool.query(
         'UPDATE org_chart SET position = ?, department = ?, parent_user_id = ? WHERE user_id = ? AND company_id = ?',
-        [position, department, parent_user_id || null, user_id, currentUser.company_id]
+        [position, department, parent_user_id, user_id, currentUser.company_id]
       );
     } else {
-      // ✅ Insert data baru
       await pool.query(
         'INSERT INTO org_chart (user_id, company_id, position, department, parent_user_id) VALUES (?, ?, ?, ?, ?)',
-        [user_id, currentUser.company_id, position, department, parent_user_id || null]
+        [user_id, currentUser.company_id, position, department, parent_user_id]
       );
     }
 
@@ -56,14 +60,17 @@ router.get('/get', async (req, res) => {
       [currentUser.company_id]
     );
 
-    res.json({ success: true, data: rows });
+    // Tapis keluar yang parent_user_id = 'NONE' (tak nak masuk carta langsung)
+    const filtered = rows.filter(item => item.parent_user_id !== 'NONE');
+
+    res.json({ success: true, data: filtered });
   } catch (err) {
     console.error('Ralat ambil carta organisasi:', err);
     res.status(500).json({ success: false, message: "Ralat server." });
   }
 });
 
-// ✅ Ambil senarai ahli syarikat dengan jawatan, department & parent
+// ✅ Ambil senarai ahli syarikat
 router.get('/company-members', async (req, res) => {
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
