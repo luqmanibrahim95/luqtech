@@ -41,11 +41,12 @@ app.get('/', (req, res) => {
 const companyRoutes = require('./routes/company');
 const authRoutes = require('./routes/auth');
 const planningRoutes = require('./routes/planning');
+const orgChartRoute = require('./routes/org_chart');
 
 app.use('/api', companyRoutes);
 app.use('/api', authRoutes);
 app.use('/api', planningRoutes);
-app.use('/api/org-chart', require('./routes/org_chart'));
+app.use('/api/org-chart', orgChartRoute);
 
 // Start server
 app.listen(PORT, () => {
