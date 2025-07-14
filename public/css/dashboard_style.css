@@ -268,7 +268,7 @@ body {
 .org-children::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: 27;
   left: 0;
   right: 0;
   height: 2px;
@@ -276,11 +276,6 @@ body {
   margin: 0 auto;
   width: 100%;
   max-width: calc(100% - 40px); /* untuk beri ruang tepi sikit */
-}
-
-/* Tweak: supaya line tu duduk tepat pada bahagian atas line anak */
-.org-children > .org-node {
-  position: relative;
 }
 
 /* ✅ Responsive untuk mobile */
