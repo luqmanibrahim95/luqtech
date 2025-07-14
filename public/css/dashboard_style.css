@@ -233,10 +233,10 @@ body {
 .org-box:has(+ .org-children)::after {
   content: '';
   position: absolute;
-  bottom: -26px; /* panjang lebih untuk sambung rapat */
+  bottom: -27px; /* panjang lebih untuk sambung rapat */
   left: 50%;
   width: 2px;
-  height: 26px;
+  height: 27px;
   background: #999;
   transform: translateX(-50%);
 }
@@ -256,10 +256,10 @@ body {
 .org-children > .org-node > .org-box::before {
   content: '';
   position: absolute;
-  top: -26px;
+  top: -27px;
   left: 50%;
   width: 2px;
-  height: 26px;
+  height: 27px;
   background: #999;
   transform: translateX(-50%);
 }
