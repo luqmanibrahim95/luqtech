@@ -233,7 +233,7 @@ body {
 .org-box:has(+ .org-children)::after {
   content: '';
   position: absolute;
-  bottom: -15px;
+  bottom: -25px;
   left: 50%;
   width: 2px;
   height: 15px;
