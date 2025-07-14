@@ -268,7 +268,7 @@ body {
 .org-children::before {
   content: '';
   position: absolute;
-  top: -1px; /* supaya duduk betul-betul atas .org-children, matching dengan bottom line parent */
+  top: -50px; /* supaya duduk betul-betul atas .org-children, matching dengan bottom line parent */
   left: 0;
   right: 0;
   height: 2px;
