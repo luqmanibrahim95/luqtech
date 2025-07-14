@@ -229,11 +229,11 @@ body {
   position: relative;
 }
 
-/* Garisan bawah parent ke garis horizontal anak */
+/* Parent box: garis menegak turun ke bawah */
 .org-box::after {
   content: '';
   position: absolute;
-  bottom: -20px;
+  bottom: 0;
   left: 50%;
   width: 2px;
   height: 20px;
@@ -241,7 +241,7 @@ body {
   transform: translateX(-50%);
 }
 
-/* Container untuk anak-anak */
+/* Container anak-anak */
 .org-children {
   display: inline-flex;
   justify-content: center;
@@ -255,24 +255,23 @@ body {
 .org-children::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  top: -10px; /* 🔧 turun sikit supaya bersambung elok */
+  left: 0;
+  right: 0;
   height: 2px;
   background: #999;
-  width: calc(100% - 40px);
 }
 
-/* Garisan tegak dari setiap anak ke garisan atas */
+/* Garisan tegak dari setiap anak ke garis atas */
 .org-children > .org-node::before {
   content: '';
   position: absolute;
   top: -20px;
   left: 50%;
+  transform: translateX(-50%);
   width: 2px;
   height: 20px;
   background: #999;
-  transform: translateX(-50%);
 }
 
 /* Responsive carta */
