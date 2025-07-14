@@ -241,6 +241,18 @@ body {
   transform: translateX(-50%);
 }
 
+/* ✅ Garisan menegak ke atas untuk anak-anak yang ada parent */
+.org-children > .org-node::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 25px; /* sama dengan line bawah parent */
+  background: #999;
+  transform: translateX(-50%);
+}
+
 /* Container anak-anak */
 .org-children {
   display: flex;
