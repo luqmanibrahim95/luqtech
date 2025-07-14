@@ -241,6 +241,17 @@ body {
   transform: translateX(-50%);
 }
 
+/* Container anak-anak */
+.org-children {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 30px;
+  position: relative;
+  padding-top: 20px;
+}
+
 /* ✅ Garisan menegak ke atas untuk anak-anak yang ada parent */
 .org-children > .org-node::before {
   content: '';
@@ -251,17 +262,6 @@ body {
   height: 25px; /* sama dengan line bawah parent */
   background: #999;
   transform: translateX(-50%);
-}
-
-/* Container anak-anak */
-.org-children {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 40px;
-  margin-top: 30px;
-  position: relative;
-  padding-top: 20px;
 }
 
 /* Garisan lain dimatikan buat masa ni */
