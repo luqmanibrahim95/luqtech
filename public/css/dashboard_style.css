@@ -264,19 +264,24 @@ body {
   transform: translateX(-50%);
 }
 
-/* ✅ Garisan melintang sambungkan semua anak-anak */
+/* ✅ Garisan melintang sambungkan semua anak-anak (betul-betul tengah T) */
 .org-children::before {
   content: '';
   position: absolute;
-  top: 27;
+  top: -1px; /* supaya duduk betul-betul atas .org-children, matching dengan bottom line parent */
   left: 0;
   right: 0;
   height: 2px;
   background: #999;
-  margin: 0 auto;
   width: 100%;
-  max-width: calc(100% - 40px); /* untuk beri ruang tepi sikit */
+  transform: none;
 }
+
+/* Tweak: supaya line tu duduk tepat pada bahagian atas line anak */
+.org-children > .org-node {
+  position: relative;
+}
+
 
 /* ✅ Responsive untuk mobile */
 @media (max-width: 768px) {
