@@ -206,7 +206,7 @@ body {
 }
 
 /* --------------------------- */
-/* 🚀 CARTA ORGANISASI STYLE 🚀 - WITH VERTICAL LINE DOWN FROM PARENT */
+/* 🚀 CARTA ORGANISASI STYLE 🚀 - DENGAN GARISAN SAMBUNG CANTIK */
 /* --------------------------- */
 
 .org-node {
@@ -214,7 +214,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 10px 10px 10px; /* top = 0, left/right/bottom = 10px */
+  padding: 0 10px 10px 10px; /* top 0 untuk rapatkan ke atas */
 }
 
 .org-box {
@@ -233,15 +233,15 @@ body {
 .org-box:has(+ .org-children)::after {
   content: '';
   position: absolute;
-  bottom: -25px;
+  bottom: -26px; /* panjang lebih untuk sambung rapat */
   left: 50%;
   width: 2px;
-  height: 25px;
+  height: 26px;
   background: #999;
   transform: translateX(-50%);
 }
 
-/* Container anak-anak */
+/* ✅ Container anak-anak */
 .org-children {
   display: flex;
   justify-content: center;
@@ -252,19 +252,19 @@ body {
   padding-top: 20px;
 }
 
-/* ✅ Garisan menegak ke atas untuk anak-anak yang ada parent */
+/* ✅ Garisan menegak ke atas untuk anak-anak */
 .org-children > .org-node > .org-box::before {
   content: '';
   position: absolute;
-  top: -25px;
+  top: -26px;
   left: 50%;
   width: 2px;
-  height: 25px;
+  height: 26px;
   background: #999;
   transform: translateX(-50%);
 }
 
-/* Responsive */
+/* ✅ Responsive untuk mobile */
 @media (max-width: 768px) {
   .org-children {
     flex-direction: column;
