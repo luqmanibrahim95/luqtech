@@ -230,10 +230,10 @@ body {
 }
 
 /* ✅ Garisan menegak ke bawah dari parent */
-.org-node:has(.org-children)::after {
+.org-box:has(+ .org-children)::after {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: -15px;
   left: 50%;
   width: 2px;
   height: 15px;
