@@ -210,84 +210,27 @@ body {
 /* --------------------------- */
 
 .org-node {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  position: relative;
 }
 
 .org-box {
+  padding: 10px 15px;
   border: 2px solid #444;
   border-radius: 10px;
-  padding: 10px 15px;
   background: #f2f2f2;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   min-width: 150px;
   text-align: center;
   font-size: 14px;
-  position: relative;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Garisan menegak dari parent turun ke garisan mendatar anak-anak */
-.org-node::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
+/* garis tegak bawah org-box */
+.line-vertical {
   width: 2px;
   height: 20px;
   background: #999;
-  transform: translateX(-50%);
-}
-
-/* Children container */
-.org-children {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 40px;
-  margin-top: 30px;
-  position: relative;
-  padding-top: 20px;
-}
-
-/* Garisan mendatar dari kiri ke kanan sambungkan semua anak */
-.org-children::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 2px;
-  width: 100%;
-  background: #999;
-}
-
-/* Garisan tegak dari setiap anak ke garisan mendatar */
-.org-children > .org-node::before {
-  content: '';
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  width: 2px;
-  height: 20px;
-  background: #999;
-  transform: translateX(-50%);
-}
-
-/* Buang garisan parent kalau tiada anak */
-.org-node:not(:has(.org-children))::after {
-  display: none;
-}
-
-/* Responsive carta */
-@media (max-width: 768px) {
-  .org-children {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .org-children::before {
-    display: none;
-  }
+  margin-top: -2px;
 }
