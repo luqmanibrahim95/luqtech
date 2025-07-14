@@ -253,13 +253,13 @@ body {
 }
 
 /* ✅ Garisan menegak ke atas untuk anak-anak yang ada parent */
-.org-children > .org-node::before {
+.org-children > .org-node > .org-box::before {
   content: '';
   position: absolute;
-  top: -25px;           /* naik ke atas 25px */
+  top: -25px;
   left: 50%;
   width: 2px;
-  height: 25px;         /* panjang line */
+  height: 25px;
   background: #999;
   transform: translateX(-50%);
 }
