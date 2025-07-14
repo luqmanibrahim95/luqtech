@@ -236,7 +236,7 @@ body {
   bottom: -25px;
   left: 50%;
   width: 2px;
-  height: 15px;
+  height: 25px;
   background: #999;
   transform: translateX(-50%);
 }
