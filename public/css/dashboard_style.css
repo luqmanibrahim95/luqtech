@@ -206,7 +206,7 @@ body {
 }
 
 /* --------------------------- */
-/* 🚀 CARTA ORGANISASI STYLE 🚀 */
+/* 🚀 CARTA ORGANISASI STYLE 🚀 - WITH VERTICAL LINE DOWN FROM PARENT */
 /* --------------------------- */
 
 .org-node {
@@ -229,13 +229,19 @@ body {
   position: relative;
 }
 
-/* ✅ Tiada garisan bawah parent */
-.org-node::after {
-  display: none !important;
-  content: none;
+/* ✅ Tambah garisan menegak ke bawah dari tengah parent */
+.org-node:has(.org-children)::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  width: 2px;
+  height: 15px; /* separuh dari jarak 30px dalam .org-children */
+  background: #999;
+  transform: translateX(-50%);
 }
 
-/* ✅ Susunan anak-anak di bawah parent */
+/* Children container */
 .org-children {
   display: flex;
   justify-content: center;
@@ -246,26 +252,17 @@ body {
   padding-top: 20px;
 }
 
-/* ❌ Buang garisan mendatar */
-.org-children::before {
-  display: none !important;
-  content: none;
-}
-
-/* ❌ Buang garisan dari anak ke line atas */
+/* ❌ Belum tambah line-line lain */
+.org-children::before,
 .org-children > .org-node::before {
   display: none !important;
   content: none;
 }
 
-/* ✅ Responsive jika mobile */
+/* Responsive untuk mobile */
 @media (max-width: 768px) {
   .org-children {
     flex-direction: column;
     gap: 20px;
-  }
-
-  .org-children::before {
-    display: none;
   }
 }
