@@ -229,19 +229,19 @@ body {
   position: relative;
 }
 
-/* ✅ Tambah garisan menegak ke bawah dari tengah parent */
+/* ✅ Garisan menegak ke bawah dari parent */
 .org-node:has(.org-children)::after {
   content: '';
   position: absolute;
   top: 100%;
   left: 50%;
   width: 2px;
-  height: 15px; /* separuh dari jarak 30px dalam .org-children */
+  height: 15px;
   background: #999;
   transform: translateX(-50%);
 }
 
-/* Children container */
+/* Container anak-anak */
 .org-children {
   display: flex;
   justify-content: center;
@@ -252,17 +252,18 @@ body {
   padding-top: 20px;
 }
 
-/* ❌ Belum tambah line-line lain */
+/* Garisan lain dimatikan buat masa ni */
 .org-children::before,
 .org-children > .org-node::before {
   display: none !important;
   content: none;
 }
 
-/* Responsive untuk mobile */
+/* Responsive */
 @media (max-width: 768px) {
   .org-children {
     flex-direction: column;
     gap: 20px;
   }
 }
+
