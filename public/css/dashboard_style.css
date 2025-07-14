@@ -268,13 +268,12 @@ body {
 .org-children::before {
   content: '';
   position: absolute;
-  top: -5px; /* supaya duduk betul-betul atas .org-children, matching dengan bottom line parent */
-  left: 0;
-  right: 0;
+  top: -5px;
+  left: 50%;
+  width: calc(100% - 80px); /* sebab gap = 40px, so 2 * 40px = 80px */
   height: 2px;
   background: #999;
-  width: 100%;
-  transform: none;
+  transform: translateX(-50%);
 }
 
 /* Tweak: supaya line tu duduk tepat pada bahagian atas line anak */
