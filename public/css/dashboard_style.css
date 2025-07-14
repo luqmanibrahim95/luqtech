@@ -210,27 +210,62 @@ body {
 /* --------------------------- */
 
 .org-node {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
+  padding: 10px;
 }
 
 .org-box {
-  padding: 10px 15px;
   border: 2px solid #444;
   border-radius: 10px;
+  padding: 10px 15px;
   background: #f2f2f2;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   min-width: 150px;
   text-align: center;
   font-size: 14px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: relative;
 }
 
-/* garis tegak bawah org-box */
-.line-vertical {
-  width: 2px;
-  height: 20px;
-  background: #999;
-  margin-top: -2px;
+/* ✅ Tiada garisan bawah parent */
+.org-node::after {
+  display: none !important;
+  content: none;
+}
+
+/* ✅ Susunan anak-anak di bawah parent */
+.org-children {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;
+  margin-top: 30px;
+  position: relative;
+  padding-top: 20px;
+}
+
+/* ❌ Buang garisan mendatar */
+.org-children::before {
+  display: none !important;
+  content: none;
+}
+
+/* ❌ Buang garisan dari anak ke line atas */
+.org-children > .org-node::before {
+  display: none !important;
+  content: none;
+}
+
+/* ✅ Responsive jika mobile */
+@media (max-width: 768px) {
+  .org-children {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .org-children::before {
+    display: none;
+  }
 }
