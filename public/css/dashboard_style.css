@@ -264,13 +264,6 @@ body {
   transform: translateX(-50%);
 }
 
-/* Garisan lain dimatikan buat masa ni */
-.org-children::before,
-.org-children > .org-node::before {
-  display: none !important;
-  content: none;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .org-children {
