@@ -275,8 +275,8 @@ body {
   background: #999;
   transform: none;
   /* 👇 Ini akan crop line ikut first & last child sahaja */
-  margin-left: 100px;
-  margin-right: 100px;
+  margin-left: 85px;
+  margin-right: 85px;
 }
 
 /* Tweak: supaya line tu duduk tepat pada bahagian atas line anak */
