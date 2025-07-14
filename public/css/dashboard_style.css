@@ -256,10 +256,10 @@ body {
 .org-children > .org-node::before {
   content: '';
   position: absolute;
-  top: 0;
+  top: -25px;           /* naik ke atas 25px */
   left: 50%;
   width: 2px;
-  height: 25px; /* sama dengan line bawah parent */
+  height: 25px;         /* panjang line */
   background: #999;
   transform: translateX(-50%);
 }
