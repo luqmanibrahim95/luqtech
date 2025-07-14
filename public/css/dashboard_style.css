@@ -227,44 +227,48 @@ body {
   position: relative;
 }
 
+/* Garisan bawah parent ke garis horizontal anak */
 .org-box::after {
   content: '';
   position: absolute;
-  bottom: -20px;
+  bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
   width: 2px;
   height: 20px;
   background: #999;
+  transform: translateX(-50%);
 }
 
 .org-children {
   display: flex;
   justify-content: center;
   gap: 40px;
-  margin-top: 30px;
+  margin-top: 20px;
   position: relative;
 }
 
+/* Garisan horizontal sambung semua anak */
 .org-children::before {
   content: '';
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
   height: 2px;
   background: #999;
 }
 
-.org-node:not(:only-child)::before {
+/* Garisan atas dari setiap anak ke garisan horizontal */
+.org-children > .org-node::before {
   content: '';
   position: absolute;
   top: -20px;
   left: 50%;
+  transform: translateX(-50%);
   width: 2px;
   height: 20px;
   background: #999;
-  transform: translateX(-50%);
 }
 
 
