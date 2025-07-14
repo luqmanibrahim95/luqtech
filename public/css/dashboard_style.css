@@ -269,11 +269,14 @@ body {
   content: '';
   position: absolute;
   top: -5px;
-  left: 50%;
-  width: calc(100% - 80px); /* sebab gap = 40px, so 2 * 40px = 80px */
+  left: 0;
+  right: 0;
   height: 2px;
   background: #999;
-  transform: translateX(-50%);
+  transform: none;
+  /* 👇 Ini akan crop line ikut first & last child sahaja */
+  margin-left: 75px;
+  margin-right: 75px;
 }
 
 /* Tweak: supaya line tu duduk tepat pada bahagian atas line anak */
