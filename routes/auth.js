@@ -54,12 +54,44 @@ router.post('/logout', (req, res) => {
 });
 
 // GET /api/check-user
-router.get('/check-user', (req, res) => {
+router.get('/check-user', async (req, res) => {
   try {
-    const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
-    if (!user) return res.status(401).json({ message: 'Tiada sesi login.' });
-    res.json({ user });
+    const cookie = req.cookies.user;
+    if (!cookie) return res.status(401).json({ message: 'Tiada sesi login.' });
+
+    const sessionUser = JSON.parse(cookie);
+
+    const [userRows] = await pool.query(`
+      SELECT u.id, u.email, u.first_name, u.last_name, u.is_admin, u.company_id,
+             d.name AS department_name,
+             c.name AS company_name
+      FROM users u
+      LEFT JOIN org_chart o ON u.id = o.user_id AND u.company_id = o.company_id
+      LEFT JOIN departments d ON o.department_id = d.id
+      LEFT JOIN companies c ON u.company_id = c.id
+      WHERE u.id = ?
+    `, [sessionUser.id]);
+
+    if (!userRows || userRows.length === 0) {
+      return res.status(404).json({ message: "Pengguna tidak dijumpai." });
+    }
+
+    const user = userRows[0];
+
+    res.json({
+      user: {
+        id: user.id,
+        fullname: `${user.first_name} ${user.last_name}`,
+        email: user.email,
+        is_admin: user.is_admin === 1 || user.is_admin === '1',
+        company_id: user.company_id,
+        company_name: user.company_name || 'Tiada',
+        department_name: user.department_name || null
+      }
+    });
+
   } catch (err) {
+    console.error("Ralat semak sesi user:", err);
     res.status(400).json({ message: 'Sesi rosak.' });
   }
 });

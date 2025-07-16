@@ -19,6 +19,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (user.company_id) {
         document.getElementById('user-company').innerHTML = `
           Syarikat: <a href="#" id="linkSyarikat">${user.company_name}</a>
+          Jabatan: ${user.department_name || 'Tiada'}
         `;
         document.getElementById('linkSyarikat').addEventListener('click', (e) => {
           e.preventDefault();
