@@ -19,7 +19,6 @@ window.addEventListener('DOMContentLoaded', () => {
       if (user.company_id) {
         document.getElementById('user-company').innerHTML = `
           Syarikat: <a href="#" id="linkSyarikat">${user.company_name}</a>
-          Jabatan: ${user.department_name || 'Tiada'}
         `;
         document.getElementById('linkSyarikat').addEventListener('click', (e) => {
           e.preventDefault();
@@ -29,6 +28,12 @@ window.addEventListener('DOMContentLoaded', () => {
             alert("Modul belum dimuatkan.");
           }
         });
+
+        // Papar jabatan juga
+        const jabatanDiv = document.getElementById('user-department');
+        if (jabatanDiv) {
+          jabatanDiv.innerHTML = `Jabatan: ${user.department_name || 'Tiada'}`;
+        }
 
         // ✅ Tambah Carta Organisasi (untuk semua user yg ada syarikat)
         const panel = document.querySelector('.left-panel');
