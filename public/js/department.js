@@ -1,19 +1,30 @@
-function loadDepartmentPanel() {
-  document.querySelector(".center-panel").innerHTML = `
-    <h2>📁 Bahagian Jabatan</h2>
-    <div id="departmentList">Memuatkan...</div>
-    <br>
-    <button id="btnAddDept">+ Tambah Jabatan</button>
-    <div id="addDeptForm" style="margin-top: 15px;"></div>
-  `;
+// 1. FUNCTION: loadDepartmentList
+function loadDepartmentList() {
+  fetch('/api/departments')
+    .then(res => res.json())
+    .then(data => {
+      const listDiv = document.getElementById("departmentList");
 
-  loadDepartmentList();
+      if (!data.departments || data.departments.length === 0) {
+        listDiv.innerHTML = `<i>Tiada jabatan dijumpai.</i>`;
+        return;
+      }
 
-  document.getElementById("btnAddDept").addEventListener("click", () => {
-    showAddDepartmentForm();
-  });
+      const html = `
+        <ul style="padding-left: 20px;">
+          ${data.departments.map(dept => `<li>${dept.name}</li>`).join('')}
+        </ul>
+      `;
+
+      listDiv.innerHTML = html;
+    })
+    .catch(err => {
+      console.error('Gagal dapatkan jabatan:', err);
+      document.getElementById("departmentList").innerHTML = "Ralat semasa memuatkan jabatan.";
+    });
 }
 
+// 2. FUNCTION: showAddDepartmentForm
 function showAddDepartmentForm() {
   const formContainer = document.getElementById("addDeptForm");
 
@@ -33,27 +44,43 @@ function showAddDepartmentForm() {
 
     fetch('/api/departments', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     })
       .then(res => res.json())
       .then(data => {
+        const msg = document.getElementById("deptMsg");
+
         if (data.error) {
-          document.getElementById("deptMsg").style.color = "red";
-          document.getElementById("deptMsg").textContent = data.error;
+          msg.style.color = "red";
+          msg.textContent = data.error;
         } else {
-          document.getElementById("deptMsg").style.color = "green";
-          document.getElementById("deptMsg").textContent = "Berjaya ditambah!";
+          msg.style.color = "green";
+          msg.textContent = "Berjaya ditambah!";
           loadDepartmentList();
           document.getElementById("newDeptName").value = "";
         }
       })
       .catch(err => {
         console.error('Error hantar jabatan:', err);
-        document.getElementById("deptMsg").style.color = "red";
         document.getElementById("deptMsg").textContent = "Ralat semasa hantar.";
       });
+  });
+}
+
+// 3. FUNCTION: loadDepartmentPanel
+function loadDepartmentPanel() {
+  document.querySelector(".center-panel").innerHTML = `
+    <h2>📁 Bahagian Jabatan</h2>
+    <div id="departmentList">Memuatkan...</div>
+    <br>
+    <button id="btnAddDept">+ Tambah Jabatan</button>
+    <div id="addDeptForm" style="margin-top: 15px;"></div>
+  `;
+
+  loadDepartmentList();
+
+  document.getElementById("btnAddDept").addEventListener("click", () => {
+    showAddDepartmentForm();
   });
 }
