@@ -78,4 +78,26 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Hapus jabatan
+router.delete('/:id', async (req, res) => {
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
+  const deptId = req.params.id;
+
+  if (!user || !user.is_admin || !user.company_id) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    await pool.query(`
+      DELETE FROM departments
+      WHERE id = ? AND company_id = ?
+    `, [deptId, user.company_id]);
+
+    res.json({ message: 'Jabatan berjaya dipadam' });
+  } catch (err) {
+    console.error('Gagal hapus jabatan:', err);
+    res.status(500).json({ message: 'Ralat pelayan' });
+  }
+});
+
 module.exports = router;

@@ -15,18 +15,19 @@ function loadDepartmentList() {
         html += `
         <div style="margin-bottom: 10px;">
             <div style="
-            height: 40px;
-            width: 200px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            overflow: hidden;
-            ">
+                height: 40px;
+                width: 200px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                overflow: hidden;
+                ">
             <div style="height: 50%; background-color: ${dept.color_top};"></div>
             <div style="height: 50%; background-color: ${dept.color_bottom};"></div>
             </div>
             <div style="font-weight: bold; margin-top: 5px;">
-            ${dept.name}
-            <button onclick="editDepartment(${dept.id}, '${dept.name}', '${dept.color_top}', '${dept.color_bottom}')" style="margin-left: 10px;">✏️</button>
+                ${dept.name}
+                <button onclick="editDepartment(${dept.id}, '${dept.name}', '${dept.color_top}', '${dept.color_bottom}')" style="margin-left: 10px;">✏️</button>
+                <button onclick="deleteDepartment(${dept.id})" style="margin-left: 5px; color: red;">🗑️</button>
             </div>
             <small>${dept.color_top} → ${dept.color_bottom}</small>
         </div>
@@ -146,3 +147,21 @@ function submitUpdateDept(id) {
       document.getElementById("editDeptMsg").textContent = "Gagal kemaskini";
     });
 }
+
+function deleteDepartment(id) {
+  if (!confirm("Adakah anda pasti mahu padam jabatan ini?")) return;
+
+  fetch(`/api/departments/${id}`, {
+    method: 'DELETE'
+  })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message || 'Dipadam!');
+      loadDepartmentList();
+    })
+    .catch(err => {
+      console.error('Gagal padam:', err);
+      alert('Ralat padam jabatan.');
+    });
+}
+
