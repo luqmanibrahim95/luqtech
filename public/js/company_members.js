@@ -1,11 +1,24 @@
+async function getDepartments() {
+  try {
+    const res = await fetch('/api/departments');
+    const data = await res.json();
+    if (!data.departments) return [];
+    return data.departments;
+  } catch (err) {
+    console.error('Gagal ambil jabatan:', err);
+    return [];
+  }
+}
+
 function loadCompanyMembers() {
   fetch('/api/check-user')
     .then(res => {
       if (!res.ok) throw new Error('Sesi tamat');
       return res.json();
     })
-    .then(data => {
+    .then(async data => {
       const currentUser = data.user;
+      const departments = await getDepartments();
 
       fetch('/api/org-chart/company-members')
         .then(res => res.json())
@@ -22,6 +35,11 @@ function loadCompanyMembers() {
             const isSelf = currentUser.id === member.id;
             const role = member.is_admin ? 'Admin' : 'Staf';
 
+            const deptOptions = [`<option value="">Tiada</option>`]
+              .concat(departments.map(d => `
+                <option value="${d.id}" ${d.id == member.department_id ? 'selected' : ''}>${d.name}</option>
+              `)).join('');
+
             return `
               <li style="margin-bottom: 20px;">
                 <strong>${member.fullname}</strong> (${member.email}) - ${role}
@@ -32,7 +50,10 @@ function loadCompanyMembers() {
 
                 <div style="margin-top: 5px; padding-left: 15px;">
                   Jawatan: <input type="text" id="position_${member.id}" value="${member.position || ''}" placeholder="Contoh: Pengurus"/><br>
-                  Department: <input type="text" id="department_${member.id}" value="${member.department || ''}" placeholder="Contoh: Operasi"/><br>
+                  Department: 
+                  <select id="department_${member.id}">
+                    ${deptOptions}
+                  </select><br>
                   Lapor kepada: 
                   <select id="parent_${member.id}">
                     <option value="NONE">Tiada</option>
@@ -50,16 +71,14 @@ function loadCompanyMembers() {
             <ul>${list}</ul>
           `;
 
-          // Isikan balik parent_user_id dalam dropdown
           members.forEach(member => {
             const select = document.getElementById(`parent_${member.id}`);
             if (select) {
-              if (member.parent_user_id === null) {
+              if (member.parent_user_id === 'ROOT') {
                 select.value = "ROOT";
-              } else if (member.parent_user_id !== '') {
+              } else if (member.parent_user_id && member.parent_user_id !== 'NONE') {
                 select.value = member.parent_user_id;
               }
-              // Kalau kosong & bukan root, biarkan default
             }
           });
         });
@@ -110,39 +129,36 @@ function promoteToAdmin(userId) {
 
 function saveOrgInfo(userId) {
   const position = document.getElementById(`position_${userId}`).value.trim();
-  const department = document.getElementById(`department_${userId}`).value.trim();
+  const departmentId = document.getElementById(`department_${userId}`).value || null;
   let parentId = document.getElementById(`parent_${userId}`).value;
 
-  // ✅ Logik baru
   if (parentId === "ROOT") {
-    parentId = null; // Jadi root dalam carta
+    parentId = null;
   } else if (parentId === "NONE") {
-    // ❌ Hapus dari carta
     fetch('/api/org-chart/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_id: userId })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("Pengguna dikeluarkan dari carta organisasi.");
-        loadCompanyMembers(); // reload semula
-      } else {
-        alert(data.message || "Gagal padam dari carta.");
-      }
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert("Pengguna dikeluarkan dari carta organisasi.");
+          loadCompanyMembers();
+        } else {
+          alert(data.message || "Gagal padam dari carta.");
+        }
+      });
     return;
   }
 
-  // ✅ Terus simpan kalau bukan NONE
   fetch('/api/org-chart/save-org-info', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       user_id: userId,
       position,
-      department,
+      department_id: departmentId === "" ? null : Number(departmentId),
       parent_user_id: parentId
     })
   })
@@ -159,4 +175,5 @@ function saveOrgInfo(userId) {
       alert("Ralat ketika menghantar maklumat.");
     });
 }
+
 

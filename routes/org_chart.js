@@ -4,7 +4,7 @@ const pool = require('../db/db');
 
 // ✅ Simpan atau update maklumat carta organisasi
 router.post('/save-org-info', async (req, res) => {
-  let { user_id, position, department, parent_user_id } = req.body;
+  let { user_id, position, department_id, parent_user_id } = req.body;
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
   if (!currentUser || !currentUser.company_id) {
@@ -12,7 +12,6 @@ router.post('/save-org-info', async (req, res) => {
   }
 
   try {
-    // ❗ Kalau "NONE", padam terus user dari carta
     if (parent_user_id === "NONE") {
       await pool.query(
         'DELETE FROM org_chart WHERE user_id = ? AND company_id = ?',
@@ -21,28 +20,24 @@ router.post('/save-org-info', async (req, res) => {
       return res.json({ success: true });
     }
 
-    // ✅ Tukar "ROOT" atau kosong kepada null
     if (!parent_user_id || parent_user_id === "ROOT") {
       parent_user_id = null;
     }
 
-    // ✅ Semak jika user sudah wujud dalam carta
     const [existing] = await pool.query(
       'SELECT id FROM org_chart WHERE user_id = ? AND company_id = ?',
       [user_id, currentUser.company_id]
     );
 
     if (existing.length > 0) {
-      // ✅ Kemas kini sedia ada
       await pool.query(
-        'UPDATE org_chart SET position = ?, department = ?, parent_user_id = ? WHERE user_id = ? AND company_id = ?',
-        [position, department, parent_user_id, user_id, currentUser.company_id]
+        'UPDATE org_chart SET position = ?, department_id = ?, parent_user_id = ? WHERE user_id = ? AND company_id = ?',
+        [position, department_id || null, parent_user_id, user_id, currentUser.company_id]
       );
     } else {
-      // ✅ Masukkan data baru
       await pool.query(
-        'INSERT INTO org_chart (user_id, company_id, position, department, parent_user_id) VALUES (?, ?, ?, ?, ?)',
-        [user_id, currentUser.company_id, position, department, parent_user_id]
+        'INSERT INTO org_chart (user_id, company_id, position, department_id, parent_user_id) VALUES (?, ?, ?, ?, ?)',
+        [user_id, currentUser.company_id, position, department_id || null, parent_user_id]
       );
     }
 
@@ -77,7 +72,7 @@ router.get('/get', async (req, res) => {
   }
 });
 
-// ✅ Ambil senarai ahli syarikat + info carta
+// ✅ Ambil senarai ahli syarikat + info carta + nama jabatan
 router.get('/company-members', async (req, res) => {
   const currentUser = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
@@ -89,16 +84,18 @@ router.get('/company-members', async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         u.id, u.email, u.first_name, u.last_name, u.is_admin,
-        o.position, o.department, o.parent_user_id
+        o.position, o.parent_user_id, o.department_id,
+        d.name AS department_name
       FROM users u
       LEFT JOIN org_chart o ON o.user_id = u.id AND o.company_id = ?
+      LEFT JOIN departments d ON d.id = o.department_id
       WHERE u.company_id = ?
     `, [currentUser.company_id, currentUser.company_id]);
 
     const members = rows.map(user => {
       const inOrgChart =
         user.position !== null ||
-        user.department !== null ||
+        user.department_id !== null ||
         user.parent_user_id !== null;
 
       return {
@@ -107,7 +104,8 @@ router.get('/company-members', async (req, res) => {
         fullname: `${user.first_name} ${user.last_name}`,
         is_admin: user.is_admin === '1',
         position: user.position || '',
-        department: user.department || '',
+        department_id: user.department_id || '', // 🆕
+        department_name: user.department_name || '', // 🆕
         parent_user_id: !inOrgChart
           ? 'NONE'
           : (user.parent_user_id === null ? 'ROOT' : user.parent_user_id)
