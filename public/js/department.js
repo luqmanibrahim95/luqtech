@@ -13,19 +13,23 @@ function loadDepartmentList() {
       let html = '';
       data.departments.forEach(dept => {
         html += `
-          <div style="margin-bottom: 10px;">
+        <div style="margin-bottom: 10px;">
             <div style="
-              background: linear-gradient(to bottom, ${dept.color_top}, ${dept.color_bottom});
-              padding: 10px;
-              border-radius: 6px;
-              border: 1px solid #ccc;
-              font-weight: bold;
-              width: fit-content;
+            height: 40px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
             ">
-              ${dept.name}
+            <div style="height: 50%; background-color: ${dept.color_top};"></div>
+            <div style="height: 50%; background-color: ${dept.color_bottom};"></div>
+            </div>
+            <div style="font-weight: bold; margin-top: 5px;">
+            ${dept.name}
+            <button onclick="editDepartment(${dept.id}, '${dept.name}', '${dept.color_top}', '${dept.color_bottom}')" style="margin-left: 10px;">✏️</button>
             </div>
             <small>${dept.color_top} → ${dept.color_bottom}</small>
-          </div>
+        </div>
         `;
       });
 
@@ -100,4 +104,45 @@ function loadDepartmentPanel() {
   document.getElementById("btnAddDept").addEventListener("click", () => {
     showAddDepartmentForm();
   });
+}
+
+function editDepartment(id, name, colorTop, colorBottom) {
+  const formContainer = document.getElementById("addDeptForm");
+
+  formContainer.innerHTML = `
+    <h4>Kemaskini Jabatan</h4>
+    <input type="text" id="editDeptName" value="${name}" style="padding: 5px; width: 200px;"><br><br>
+    <label>Warna Atas: <input type="color" id="editColorTop" value="${colorTop}" /></label><br><br>
+    <label>Warna Bawah: <input type="color" id="editColorBottom" value="${colorBottom}" /></label><br><br>
+    <button onclick="submitUpdateDept(${id})">Kemaskini</button>
+    <span id="editDeptMsg" style="margin-left: 10px;"></span>
+  `;
+}
+
+function submitUpdateDept(id) {
+  const name = document.getElementById("editDeptName").value.trim();
+  const color_top = document.getElementById("editColorTop").value;
+  const color_bottom = document.getElementById("editColorBottom").value;
+
+  if (!name) {
+    document.getElementById("editDeptMsg").textContent = "Nama diperlukan";
+    return;
+  }
+
+  fetch(`/api/departments/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, color_top, color_bottom })
+  })
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("editDeptMsg").style.color = "green";
+      document.getElementById("editDeptMsg").textContent = "Berjaya dikemaskini!";
+      loadDepartmentList();
+    })
+    .catch(err => {
+      console.error('Kemaskini gagal:', err);
+      document.getElementById("editDeptMsg").style.color = "red";
+      document.getElementById("editDeptMsg").textContent = "Gagal kemaskini";
+    });
 }

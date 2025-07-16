@@ -55,4 +55,27 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT: Kemaskini jabatan
+router.put('/:id', async (req, res) => {
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
+  const { name, color_top, color_bottom } = req.body;
+
+  if (!user || !user.is_admin || !user.company_id) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    await pool.query(`
+      UPDATE departments
+      SET name = ?, color_top = ?, color_bottom = ?
+      WHERE id = ? AND company_id = ?
+    `, [name, color_top, color_bottom, req.params.id, user.company_id]);
+
+    res.json({ message: 'Jabatan dikemaskini' });
+  } catch (err) {
+    console.error('Error kemaskini jabatan:', err);
+    res.status(500).json({ message: 'Ralat pelayan' });
+  }
+});
+
 module.exports = router;
