@@ -93,6 +93,7 @@ window.loadPlanningCalendar = function () {
       eventClick: function(info) {
         if (!isAdmin) return;
         selectedEvent = info.event;
+        window.selectedEventId = selectedEvent.id;
 
         document.getElementById('taskName').value = selectedEvent.title;
         document.getElementById('startDate').value = selectedEvent.startStr;
