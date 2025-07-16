@@ -10,11 +10,24 @@ function loadDepartmentList() {
         return;
       }
 
-      const html = `
-        <ul style="padding-left: 20px;">
-          ${data.departments.map(dept => `<li>${dept.name}</li>`).join('')}
-        </ul>
-      `;
+      let html = '';
+      data.departments.forEach(dept => {
+        html += `
+          <div style="margin-bottom: 10px;">
+            <div style="
+              background: linear-gradient(to bottom, ${dept.color_top}, ${dept.color_bottom});
+              padding: 10px;
+              border-radius: 6px;
+              border: 1px solid #ccc;
+              font-weight: bold;
+              width: fit-content;
+            ">
+              ${dept.name}
+            </div>
+            <small>${dept.color_top} → ${dept.color_bottom}</small>
+          </div>
+        `;
+      });
 
       listDiv.innerHTML = html;
     })
@@ -29,13 +42,17 @@ function showAddDepartmentForm() {
   const formContainer = document.getElementById("addDeptForm");
 
   formContainer.innerHTML = `
-    <input type="text" id="newDeptName" placeholder="Nama Jabatan" style="padding: 5px; width: 200px;">
+    <input type="text" id="newDeptName" placeholder="Nama Jabatan" style="padding: 5px; width: 200px;"><br><br>
+    <label>Warna Atas: <input type="color" id="colorTop" value="#ffffff" /></label><br><br>
+    <label>Warna Bawah: <input type="color" id="colorBottom" value="#f0f0f0" /></label><br><br>
     <button id="submitDeptBtn">Simpan</button>
     <span id="deptMsg" style="margin-left: 10px; color: green;"></span>
   `;
 
   document.getElementById("submitDeptBtn").addEventListener("click", () => {
     const name = document.getElementById("newDeptName").value.trim();
+    const color_top = document.getElementById("colorTop").value;
+    const color_bottom = document.getElementById("colorBottom").value;
 
     if (!name) {
       document.getElementById("deptMsg").textContent = "Sila masukkan nama jabatan.";
@@ -45,20 +62,20 @@ function showAddDepartmentForm() {
     fetch('/api/departments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name })
+      body: JSON.stringify({ name, color_top, color_bottom })
     })
       .then(res => res.json())
       .then(data => {
         const msg = document.getElementById("deptMsg");
 
-        if (data.error) {
-          msg.style.color = "red";
-          msg.textContent = data.error;
-        } else {
+        if (data.message) {
           msg.style.color = "green";
           msg.textContent = "Berjaya ditambah!";
           loadDepartmentList();
           document.getElementById("newDeptName").value = "";
+        } else {
+          msg.style.color = "red";
+          msg.textContent = data.error || 'Ralat tidak diketahui';
         }
       })
       .catch(err => {
