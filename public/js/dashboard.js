@@ -67,6 +67,12 @@ window.addEventListener('DOMContentLoaded', () => {
         btnAhli.onclick = loadCompanyMembers;
         panel.appendChild(document.createElement('br'));
         panel.appendChild(btnAhli);
+
+        const btnJabatan = document.createElement('button');
+        btnJabatan.textContent = "📁 Jabatan";
+        btnJabatan.onclick = loadDepartmentPanel; // ← function kita akan buat nanti
+        panel.appendChild(document.createElement('br'));
+        panel.appendChild(btnJabatan);
       }
 
       // ✅ Auto buka calendar
