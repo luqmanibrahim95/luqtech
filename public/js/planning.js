@@ -217,4 +217,113 @@ window.loadPlanningCalendar = function () {
     d.setDate(d.getDate() - 1);
     return d.toISOString().split('T')[0];
   }
+
+  // ✅ Global Task Functions (Admin Only)
+  window.addTask = function () {
+    const name = document.getElementById('taskName').value.trim();
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const color = document.getElementById('colorPicker').value;
+
+    if (!name || !startDate || !endDate) {
+      alert("Sila isi semua maklumat dengan lengkap.");
+      return;
+    }
+
+    const calendar = window.myCalendar;
+    const adjustedEnd = new Date(endDate);
+    adjustedEnd.setDate(adjustedEnd.getDate() + 1);
+
+    const newEvent = calendar.addEvent({
+      title: name,
+      start: startDate,
+      end: adjustedEnd.toISOString().split('T')[0],
+      color: color,
+      allDay: true
+    });
+
+    fetch('/api/planning-tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        alert('Gagal simpan ke server.');
+        newEvent.remove();
+      }
+    });
+
+    resetForm();
+  };
+
+  window.updateTask = function () {
+    const calendar = window.myCalendar;
+    const selectedEvent = calendar.getEventById(window.selectedEventId);
+    if (!selectedEvent) return;
+
+    const updatedTitle = document.getElementById('taskName').value.trim();
+    const updatedStart = document.getElementById('startDate').value;
+    const updatedEnd = document.getElementById('endDate').value;
+    const updatedColor = document.getElementById('colorPicker').value;
+
+    if (!updatedTitle || !updatedStart || !updatedEnd) {
+      alert("Sila isi semua maklumat dengan lengkap.");
+      return;
+    }
+
+    const taskId = selectedEvent.id;
+    fetch(`/api/planning-tasks/${taskId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        selectedEvent.setProp('title', updatedTitle);
+        selectedEvent.setStart(updatedStart);
+
+        const adjEnd = new Date(updatedEnd);
+        adjEnd.setDate(adjEnd.getDate() + 1);
+        selectedEvent.setEnd(adjEnd.toISOString().split('T')[0]);
+
+        selectedEvent.setProp('backgroundColor', updatedColor);
+        selectedEvent.setProp('borderColor', updatedColor);
+        resetForm();
+      } else {
+        alert("Gagal kemaskini tugasan di server.");
+      }
+    })
+    .catch(err => {
+      console.error("Update error:", err);
+      alert("Ralat sambungan semasa kemaskini tugasan.");
+    });
+  };
+
+  window.deleteTask = function () {
+    const calendar = window.myCalendar;
+    const selectedEvent = calendar.getEventById(window.selectedEventId);
+    if (!selectedEvent) return;
+
+    const eventId = selectedEvent.id;
+    fetch(`/api/planning-tasks/${eventId}`, {
+      method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        selectedEvent.remove();
+        resetForm();
+      } else {
+        alert('Gagal padam tugasan di server.');
+      }
+    })
+    .catch(err => {
+      console.error("Delete error:", err);
+      alert("Ralat sambungan semasa cuba padam tugasan.");
+    });
+  };
+
 };
