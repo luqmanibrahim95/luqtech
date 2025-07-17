@@ -10,11 +10,16 @@ window.loadPlanningCalendar = function () {
       <option value="table">Jadual</option>
       <option value="gantt">Gantt Chart</option>
     </select>
+    <label for="projectFilter" style="margin-left: 20px;">Tapis Projek:</label>
+    <select id="projectFilter" style="margin-bottom: 20px;">
+      <option value="ALL">Semua Projek</option>
+    </select>
     <div id="taskFormContainer"></div>
     <div id="planningView"></div>
   `;
 
   document.getElementById('viewSelect').addEventListener('change', switchView);
+  document.getElementById('projectFilter').addEventListener('change', switchView);
 
   // ⬇️ Initialize with default view
   renderTaskForm();
@@ -32,10 +37,17 @@ window.loadPlanningCalendar = function () {
     }
   }
 
+  function getFilteredTasks(tasks) {
+    const selectedProject = document.getElementById('projectFilter').value;
+    if (selectedProject === 'ALL') return tasks;
+    return tasks.filter(t => t.project_name === selectedProject);
+  }
+
   function renderTaskForm() {
     if (!isAdmin) return;
     document.getElementById('taskFormContainer').innerHTML = `
       <div id="taskForm" style="margin-bottom: 20px;">
+        <input type="text" id="project_name" placeholder="Project" />
         <input type="text" id="taskName" placeholder="Nama Tugasan" />
         <input type="date" id="startDate" />
         <input type="date" id="endDate" />
@@ -72,6 +84,7 @@ window.loadPlanningCalendar = function () {
         endInput.value = end.toISOString().split('T')[0];
       }
     }
+    
   }
 
   function showCalendarView() {
@@ -99,6 +112,7 @@ window.loadPlanningCalendar = function () {
         document.getElementById('startDate').value = selectedEvent.startStr;
         document.getElementById('endDate').value = formatDateBack(selectedEvent.end);
         document.getElementById('colorPicker').value = selectedEvent.backgroundColor;
+        document.getElementById('project_name').value = selectedEvent.extendedProps.project_name || '';
 
         const diff = Math.ceil((new Date(selectedEvent.end) - new Date(selectedEvent.start)) / (1000 * 60 * 60 * 24));
         document.getElementById('period').value = diff;
@@ -120,7 +134,9 @@ window.loadPlanningCalendar = function () {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          data.tasks.forEach(task => {
+          populateProjectFilter(data.tasks); // 💥 Tambah line ni
+          const filteredTasks = getFilteredTasks(data.tasks);
+          filteredTasks.forEach(task => {
             if (!task.end) return;
             const adjustedEnd = new Date(task.end);
             adjustedEnd.setDate(adjustedEnd.getDate() + 1);
@@ -130,7 +146,10 @@ window.loadPlanningCalendar = function () {
               end: adjustedEnd.toISOString().split('T')[0],
               color: task.color,
               allDay: true,
-              id: task.id
+              id: task.id,
+              extendedProps: {
+                project_name: task.project_name
+              }
             });
           });
         }
@@ -156,8 +175,10 @@ window.loadPlanningCalendar = function () {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          populateProjectFilter(data.tasks); // 💥 Tambah line ni
+          const filteredTasks = getFilteredTasks(data.tasks);
           const tbody = document.getElementById('taskTableBody');
-          tbody.innerHTML = data.tasks.map(t => {
+          tbody.innerHTML = filteredTasks.map(t => {
             const start = new Date(t.start);
             const end = new Date(t.end);
             const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
@@ -182,8 +203,10 @@ window.loadPlanningCalendar = function () {
       .then(res => res.json())
       .then(data => {
         if (!data.success) return;
+        populateProjectFilter(data.tasks); // 💥 Tambah line ni
+        const filteredTasks = getFilteredTasks(data.tasks);
         const chart = document.getElementById('ganttChart');
-        chart.innerHTML = data.tasks.map(task => {
+        chart.innerHTML = filteredTasks.map(task => {
           const start = new Date(task.start);
           const end = new Date(task.end);
           const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
@@ -225,6 +248,7 @@ window.loadPlanningCalendar = function () {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const color = document.getElementById('colorPicker').value;
+    const project = document.getElementById('project_name').value.trim(); // ➕
 
     if (!name || !startDate || !endDate) {
       alert("Sila isi semua maklumat dengan lengkap.");
@@ -246,7 +270,7 @@ window.loadPlanningCalendar = function () {
     fetch('/api/planning-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color })
+      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color, project_name: project }) // ➕
     })
     .then(res => res.json())
     .then(data => {
@@ -257,6 +281,8 @@ window.loadPlanningCalendar = function () {
     });
 
     resetForm();
+    const currentView = document.getElementById('viewSelect').value;
+    switchView(currentView);
   };
 
   window.updateTask = function () {
@@ -268,6 +294,7 @@ window.loadPlanningCalendar = function () {
     const updatedStart = document.getElementById('startDate').value;
     const updatedEnd = document.getElementById('endDate').value;
     const updatedColor = document.getElementById('colorPicker').value;
+    const updatedProject = document.getElementById('project_name').value.trim(); // ➕ Tambah ni
 
     if (!updatedTitle || !updatedStart || !updatedEnd) {
       alert("Sila isi semua maklumat dengan lengkap.");
@@ -278,7 +305,13 @@ window.loadPlanningCalendar = function () {
     fetch(`/api/planning-tasks/${taskId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor })
+      body: JSON.stringify({
+        title: updatedTitle,
+        start: updatedStart,
+        end: updatedEnd,
+        color: updatedColor,
+        project_name: updatedProject // ➕ Tambah ni
+      })
     })
     .then(res => res.json())
     .then(data => {
@@ -292,7 +325,11 @@ window.loadPlanningCalendar = function () {
 
         selectedEvent.setProp('backgroundColor', updatedColor);
         selectedEvent.setProp('borderColor', updatedColor);
+        selectedEvent.setExtendedProp('project_name', updatedProject); // ➕ ni penting jugak
+
         resetForm();
+        const currentView = document.getElementById('viewSelect').value;
+        switchView(currentView);
       } else {
         alert("Gagal kemaskini tugasan di server.");
       }
@@ -317,6 +354,8 @@ window.loadPlanningCalendar = function () {
       if (data.success) {
         selectedEvent.remove();
         resetForm();
+          const currentView = document.getElementById('viewSelect').value;
+          switchView(currentView);
       } else {
         alert('Gagal padam tugasan di server.');
       }
@@ -328,3 +367,11 @@ window.loadPlanningCalendar = function () {
   };
 
 };
+
+function populateProjectFilter(tasks) {
+  const filter = document.getElementById('projectFilter');
+  const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
+  filter.innerHTML = '<option value="ALL">Semua Projek</option>' +
+    projects.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
