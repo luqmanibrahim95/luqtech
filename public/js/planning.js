@@ -253,18 +253,19 @@ window.loadPlanningCalendar = function () {
       allDay: true
     });
 
+    const projectId = document.getElementById('projectSelect').value;
+
     fetch('/api/planning-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color })
+      body: JSON.stringify({
+        title: name,
+        start: startDate,
+        end: endDate,
+        color: color,
+        project_id: projectId  // ✅ TAMBAH NI
+      })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) {
-        alert('Gagal simpan ke server.');
-        newEvent.remove();
-      }
-    });
 
     resetForm();
   };
@@ -364,7 +365,7 @@ function loadProjects() {
   const projectSelect = document.getElementById('projectSelect');
   projectSelect.innerHTML = '<option value="">-- Pilih Projek --</option>';
 
-  fetch('/api/projects')
+  fetch('/api/planning-projects')
     .then(res => res.json())
     .then(data => {
       if (data.success) {
