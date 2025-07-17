@@ -36,7 +36,6 @@ window.loadPlanningCalendar = function () {
     if (!isAdmin) return;
     document.getElementById('taskFormContainer').innerHTML = `
       <div id="taskForm" style="margin-bottom: 20px;">
-        <input type="text" id="project_name" placeholder="Project" />
         <input type="text" id="taskName" placeholder="Nama Tugasan" />
         <input type="date" id="startDate" />
         <input type="date" id="endDate" />

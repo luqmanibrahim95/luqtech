@@ -35,16 +35,15 @@ window.loadPlanningCalendar = function () {
   function renderTaskForm() {
     if (!isAdmin) return;
     document.getElementById('taskFormContainer').innerHTML = `
-      <div id="taskForm" style="margin-bottom: 20px;">
-        <select id="existingProjectSelect" style="margin-bottom: 8px;">
-            <option value="">➕ (Projek Baru)</option>
+      <div id="taskForm" style="margin-bottom: 20px; display: flex; gap: 5px; flex-wrap: wrap;">
+        <select id="projectDropdown" style="flex: 1; min-width: 150px;">
+          <option value="">-- Pilih Projek --</option>
         </select>
-        <input type="text" id="project_name" placeholder="Projek Baru atau pilih di atas" />
-        <input type="text" id="taskName" placeholder="Nama Tugasan" />
-        <input type="date" id="startDate" />
-        <input type="date" id="endDate" />
-        <input type="number" id="period" placeholder="Tempoh (hari)" min="1" />
-        <input type="color" id="colorPicker" value="#007bff" />
+        <input type="text" id="taskName" placeholder="Nama Tugasan" style="flex: 2; min-width: 200px;" />
+        <input type="date" id="startDate" style="flex: 1;" />
+        <input type="date" id="endDate" style="flex: 1;" />
+        <input type="number" id="period" placeholder="Tempoh (hari)" min="1" style="flex: 1;" />
+        <input type="color" id="colorPicker" value="#007bff" style="flex: 0;" />
         <button id="submitBtn" onclick="addTask()">➕ Tambah</button>
         <button id="deleteBtn" style="display:none;" onclick="deleteTask()">🗑️ Padam</button>
       </div>
@@ -98,8 +97,7 @@ window.loadPlanningCalendar = function () {
         if (!isAdmin) return;
         selectedEvent = info.event;
         window.selectedEventId = selectedEvent.id;
-        
-        document.getElementById('project_name').value = selectedEvent.extendedProps.project_name || '';
+
         document.getElementById('taskName').value = selectedEvent.title;
         document.getElementById('startDate').value = selectedEvent.startStr;
         document.getElementById('endDate').value = formatDateBack(selectedEvent.end);
@@ -135,8 +133,7 @@ window.loadPlanningCalendar = function () {
               end: adjustedEnd.toISOString().split('T')[0],
               color: task.color,
               allDay: true,
-              id: task.id,
-              project_name: task.project_name  // 🧠 penting!
+              id: task.id
             });
           });
         }
@@ -204,7 +201,6 @@ window.loadPlanningCalendar = function () {
   }
 
   function resetForm() {
-    document.getElementById('project_name').value = '';
     document.getElementById('taskName').value = '';
     document.getElementById('startDate').value = '';
     document.getElementById('endDate').value = '';
@@ -228,7 +224,6 @@ window.loadPlanningCalendar = function () {
 
   // ✅ Global Task Functions (Admin Only)
   window.addTask = function () {
-    const projectName = document.getElementById('project_name').value.trim();
     const name = document.getElementById('taskName').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -254,7 +249,7 @@ window.loadPlanningCalendar = function () {
     fetch('/api/planning-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color, project_name: projectName})
+      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color })
     })
     .then(res => res.json())
     .then(data => {
@@ -272,7 +267,6 @@ window.loadPlanningCalendar = function () {
     const selectedEvent = calendar.getEventById(window.selectedEventId);
     if (!selectedEvent) return;
 
-    const updatedProject = document.getElementById('project_name').value.trim();
     const updatedTitle = document.getElementById('taskName').value.trim();
     const updatedStart = document.getElementById('startDate').value;
     const updatedEnd = document.getElementById('endDate').value;
@@ -287,7 +281,7 @@ window.loadPlanningCalendar = function () {
     fetch(`/api/planning-tasks/${taskId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor, project_name: updatedProject })
+      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor })
     })
     .then(res => res.json())
     .then(data => {
