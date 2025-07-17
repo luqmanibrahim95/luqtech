@@ -10,13 +10,14 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      `SELECT t.id, t.title, t.start, t.end, t.color, p.project_name
-       FROM planning_tasks t
-       LEFT JOIN planning_projects p ON t.project_id = p.id
-       WHERE t.company_id = ?`,
-      [user.company_id]
-    );
+    // planning.js (line 10)
+    const [tasks] = await pool.query(`
+        SELECT t.*, p.name AS project_name 
+        FROM planning_tasks t 
+        LEFT JOIN planning_projects p ON t.project_id = p.id 
+        WHERE t.company_id = ?
+    `, [company_id]);
+
     res.json({ success: true, projects: result.rows });
   } catch (err) {
     console.error('GET /api/projects error:', err);
