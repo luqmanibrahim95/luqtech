@@ -300,15 +300,21 @@ window.loadPlanningCalendar = function () {
     fetch('/api/planning-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color, project_name: projectName })
+      body: JSON.stringify({
+        title: name,
+        start: startDate,
+        end: endDate,
+        color: color,
+        project_name: projectName
+      })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) {
-        alert('Gagal simpan ke server.');
-        newEvent.remove();
-      }
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) {
+          alert('Gagal simpan ke server.');
+          newEvent.remove();
+        }
+      });
 
     resetForm();
     refreshProjectDropdown();
