@@ -344,7 +344,7 @@ window.createProject = function () {
   const name = document.getElementById('newProjectName').value.trim();
   if (!name) return alert("Sila isi nama projek");
 
-  fetch('/api/planning-projects/create', {
+  fetch('/api/planning-projects', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ project_name: name })
