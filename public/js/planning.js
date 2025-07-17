@@ -78,6 +78,16 @@ window.loadPlanningCalendar = function () {
     }
   }
 
+  function refreshProjectDropdown() {
+    fetch('/api/planning-tasks')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          populateProjectDropdown(data.tasks);
+        }
+      });
+  }
+
   function populateProjectDropdown(tasks) {
     const select = document.getElementById('existingProjectSelect');
     if (!select) return;
@@ -218,6 +228,7 @@ window.loadPlanningCalendar = function () {
   }
 
   function resetForm() {
+    document.getElementById('project_name').value = '';
     document.getElementById('taskName').value = '';
     document.getElementById('startDate').value = '';
     document.getElementById('endDate').value = '';
@@ -278,6 +289,7 @@ window.loadPlanningCalendar = function () {
     });
 
     resetForm();
+    refreshProjectDropdown();
   };
 
   window.updateTask = function () {
@@ -315,6 +327,7 @@ window.loadPlanningCalendar = function () {
         selectedEvent.setProp('backgroundColor', updatedColor);
         selectedEvent.setProp('borderColor', updatedColor);
         resetForm();
+        refreshProjectDropdown();
       } else {
         alert("Gagal kemaskini tugasan di server.");
       }
