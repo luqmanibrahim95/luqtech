@@ -182,7 +182,10 @@ window.loadPlanningCalendar = function () {
               end: adjustedEnd.toISOString().split('T')[0],
               color: task.color,
               allDay: true,
-              id: task.id
+              id: task.id,
+              extendedProps: {
+                project_name: task.project_name  // 🧠 penting!
+              }
             });
           });
         }
