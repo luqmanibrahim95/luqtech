@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/db');
 
-// Ambil semua projek untuk syarikat user
+// ✅ GET /api/planning-projects — Ambil semua projek untuk syarikat user
 router.get('/', async (req, res) => {
   const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
   if (!user || !user.company_id) {
@@ -10,23 +10,19 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    // planning.js (line 10)
-    const [tasks] = await pool.query(`
-        SELECT t.*, p.name AS project_name 
-        FROM planning_tasks t 
-        LEFT JOIN planning_projects p ON t.project_id = p.id 
-        WHERE t.company_id = ?
-    `, [company_id]);
-
-    res.json({ success: true, projects: result.rows });
+    const [rows] = await pool.query(
+      'SELECT id, project_name FROM planning_projects WHERE company_id = ? ORDER BY created_at DESC',
+      [user.company_id]
+    );
+    res.json({ success: true, projects: rows });
   } catch (err) {
-    console.error('GET /api/projects error:', err);
+    console.error('GET /api/planning-projects error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-// Tambah projek baru
-router.post('/create', async (req, res) => {
+// ✅ POST /api/planning-projects — Tambah projek baru
+router.post('/', async (req, res) => {
   const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
   const { project_name } = req.body;
 
@@ -39,13 +35,20 @@ router.post('/create', async (req, res) => {
   }
 
   try {
-    const result = await pool.query(
-      'INSERT INTO planning_projects (project_name, company_id, created_by) VALUES (?, ?, ?) RETURNING id, project_name',
+    const [result] = await pool.query(
+      'INSERT INTO planning_projects (project_name, company_id, created_by) VALUES (?, ?, ?)',
       [project_name.trim(), user.company_id, user.id]
     );
-    res.json({ success: true, project: result.rows[0] });
+
+    res.json({
+      success: true,
+      project: {
+        id: result.insertId,
+        project_name: project_name.trim()
+      }
+    });
   } catch (err) {
-    console.error('POST /api/projects/create error:', err);
+    console.error('POST /api/planning-projects error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
