@@ -16,7 +16,6 @@ window.loadPlanningCalendar = function () {
 
   document.getElementById('viewSelect').addEventListener('change', switchView);
 
-  // ⬇️ Initialize with default view
   renderTaskForm();
   showCalendarView();
 
@@ -47,7 +46,6 @@ window.loadPlanningCalendar = function () {
       </div>
     `;
 
-
     const startInput = document.getElementById('startDate');
     const endInput = document.getElementById('endDate');
     const periodInput = document.getElementById('period');
@@ -77,14 +75,12 @@ window.loadPlanningCalendar = function () {
   }
 
   function showCalendarView() {
-    const container = document.querySelector('.center-panel');
+    const container = document.querySelector('#planningView');
     container.innerHTML = `
-      <h2 style="margin-bottom: 20px;">📅 Perancangan Bulanan</h2>
       <label for="projectFilter">Tapis Projek:</label>
       <select id="projectFilter" style="margin: 10px 0;">
         <option value="">Semua Projek</option>
       </select>
-
       <div id="calendar"></div>
     `;
 
@@ -97,27 +93,46 @@ window.loadPlanningCalendar = function () {
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,listWeek'
       },
-      events: [], // empty at start, fill later
-      eventDidMount: function(info) {
-        if (info.event.extendedProps.project_name) {
-          const project = info.event.extendedProps.project_name;
-          info.el.setAttribute('data-project', project);
-        }
-      }
-    });
+      events: function(fetchInfo, successCallback, failureCallback) {
+        fetch('/api/planning-tasks')
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              populateProjectFilter(data.tasks);
+              const filteredTasks = getFilteredTasks(data.tasks);
+              const events = filteredTasks.map(task => {
+                if (!task.end) return null;
+                const adjustedEnd = new Date(task.end);
+                adjustedEnd.setDate(adjustedEnd.getDate() + 1);
+                return {
+                  title: task.title,
+                  start: task.start,
+                  end: adjustedEnd.toISOString().split('T')[0],
+                  color: task.color,
+                  allDay: true,
+                  id: task.id,
+                  extendedProps: {
+                    project_name: task.project_name
+                  }
+                };
+              }).filter(e => e);
+              successCallback(events);
+            } else {
+              failureCallback('Gagal ambil data');
+            }
+          })
+          .catch(err => failureCallback(err));
+      },
+      eventClick: function(info) {
+        if (!isAdmin) return;
+        const event = info.event;
+        window.selectedEventId = event.id;
 
-    calendar.render();
-
-    calendar.on('eventClick', function(info) {
-      const event = info.event;
-      window.selectedEventId = event.id;
-
-      // Auto-fill form kalau admin
-      if (isAdmin) {
         document.getElementById('taskName').value = event.title;
         document.getElementById('startDate').value = event.startStr;
         document.getElementById('endDate').value = formatDateBack(event.endStr);
         document.getElementById('colorPicker').value = event.backgroundColor || event.color;
+        document.getElementById('project_name').value = event.extendedProps.project_name || '';
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.textContent = '✏️ Kemaskini';
@@ -128,22 +143,12 @@ window.loadPlanningCalendar = function () {
       }
     });
 
-    window.myCalendar = calendar; // simpan global utk update
+    calendar.render();
+    window.myCalendar = calendar;
 
-    fetch('/api/planning-tasks')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const allTasks = data.tasks;
-
-          populateProjectFilter(allTasks);
-          renderFilteredEvents(allTasks);
-
-          document.getElementById('projectFilter').addEventListener('change', () => {
-            renderFilteredEvents(allTasks);
-          });
-        }
-      });
+    document.getElementById('projectFilter').addEventListener('change', () => {
+      calendar.refetchEvents();
+    });
 
     function populateProjectFilter(tasks) {
       const select = document.getElementById('projectFilter');
@@ -157,34 +162,9 @@ window.loadPlanningCalendar = function () {
       });
     }
 
-    function renderFilteredEvents(tasks) {
-      const filterValue = document.getElementById('projectFilter').value;
-      const calendar = window.myCalendar;
-
-      calendar.removeAllEvents();
-
-      const filteredTasks = filterValue
-        ? tasks.filter(t => t.project_name === filterValue)
-        : tasks;
-
-      filteredTasks.forEach(task => {
-        if (!task.end) return;
-
-        const adjustedEnd = new Date(task.end);
-        adjustedEnd.setDate(adjustedEnd.getDate() + 1);
-
-        calendar.addEvent({
-          title: task.title,
-          start: task.start,
-          end: adjustedEnd.toISOString().split('T')[0],
-          color: task.color,
-          allDay: true,
-          id: task.id,
-          extendedProps: {
-            project_name: task.project_name
-          }
-        });
-      });
+    function getFilteredTasks(tasks) {
+      const filter = document.getElementById('projectFilter').value;
+      return filter ? tasks.filter(t => t.project_name === filter) : tasks;
     }
   }
 
