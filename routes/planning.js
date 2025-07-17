@@ -9,10 +9,9 @@ router.get('/planning-tasks', async (req, res) => {
 
   try {
     const [rows] = await pool.query(
-        'SELECT id, title, start, end, color FROM planning_tasks WHERE company_id = ?',
-        [user.company_id]
+      'SELECT id, title, start, end, color, project_name FROM planning_tasks WHERE company_id = ?',
+      [user.company_id]
     );
-
 
     res.json({ success: true, tasks: rows });
   } catch (err) {
@@ -24,11 +23,11 @@ router.get('/planning-tasks', async (req, res) => {
 // Tambah task baru
 router.post('/planning-tasks', async (req, res) => {
   const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
-  const { title, start, end, color } = req.body;
+  const { title, start, end, color, project_name } = req.body;
 
   console.log('📥 POST /planning-tasks');
   console.log('User:', user);
-  console.log('Body:', { title, start, end, color });
+  console.log('Body:', { title, start, end, color, project_name });
 
   if (!user || !user.company_id || !title || !start || !end) {
     return res.status(400).json({ success: false, message: 'Input tidak lengkap' });
@@ -36,8 +35,8 @@ router.post('/planning-tasks', async (req, res) => {
 
   try {
     await pool.query(
-        'INSERT INTO planning_tasks (company_id, title, start, end, color, created_by) VALUES (?, ?, ?, ?, ?, ?)',
-        [user.company_id, title, start, end, color || '#007bff', user.id]
+      'INSERT INTO planning_tasks (company_id, title, start, end, color, project_name, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [user.company_id, title, start, end, color || '#007bff', project_name || null, user.id]
     );
 
     res.json({ success: true });
@@ -62,12 +61,12 @@ router.delete('/planning-tasks/:id', async (req, res) => {
 // Update task
 router.patch('/planning-tasks/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, start, end, color } = req.body;
+  const { title, start, end, color, project_name } = req.body;
 
   try {
     await pool.query(
-      'UPDATE planning_tasks SET title = ?, start = ?, end = ?, color = ? WHERE id = ?',
-      [title, start, end, color, id]
+      'UPDATE planning_tasks SET title = ?, start = ?, end = ?, color = ?, project_name = ? WHERE id = ?',
+      [title, start, end, color, project_name || null, id]
     );
 
     res.json({ success: true });
@@ -76,6 +75,5 @@ router.patch('/planning-tasks/:id', async (req, res) => {
     res.status(500).json({ success: false, error: 'Gagal kemaskini data' });
   }
 });
-
 
 module.exports = router;
