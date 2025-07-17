@@ -79,16 +79,19 @@ window.loadPlanningCalendar = function () {
   }
 
   function refreshProjectDropdown() {
+    console.log('🔁 Refreshing project dropdown...');
     fetch('/api/planning-tasks')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          console.log('✅ Data fetch success:', data.tasks);
           populateProjectDropdown(data.tasks);
         }
       });
   }
 
   function populateProjectDropdown(tasks) {
+    console.log('🎯 Populating project dropdown with tasks:', tasks);
     const select = document.getElementById('existingProjectSelect');
     if (!select) return;
 
