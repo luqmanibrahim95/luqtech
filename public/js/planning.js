@@ -35,15 +35,20 @@ window.loadPlanningCalendar = function () {
   function renderTaskForm() {
     if (!isAdmin) return;
     document.getElementById('taskFormContainer').innerHTML = `
-      <div id="taskForm" style="margin-bottom: 20px; display: flex; gap: 5px; flex-wrap: wrap;">
-        <select id="projectDropdown" style="flex: 1; min-width: 150px;">
+      <div id="createProjectForm" style="margin-bottom: 10px;">
+        <input type="text" id="newProjectName" placeholder="🆕 Nama Projek Baru" />
+        <button onclick="createProject()">➕ Tambah Projek</button>
+      </div>
+
+      <div id="taskForm" style="margin-bottom: 20px;">
+        <select id="projectSelect">
           <option value="">-- Pilih Projek --</option>
         </select>
-        <input type="text" id="taskName" placeholder="Nama Tugasan" style="flex: 2; min-width: 200px;" />
-        <input type="date" id="startDate" style="flex: 1;" />
-        <input type="date" id="endDate" style="flex: 1;" />
-        <input type="number" id="period" placeholder="Tempoh (hari)" min="1" style="flex: 1;" />
-        <input type="color" id="colorPicker" value="#007bff" style="flex: 0;" />
+        <input type="text" id="taskName" placeholder="Nama Tugasan" />
+        <input type="date" id="startDate" />
+        <input type="date" id="endDate" />
+        <input type="number" id="period" placeholder="Tempoh (hari)" min="1" />
+        <input type="color" id="colorPicker" value="#007bff" />
         <button id="submitBtn" onclick="addTask()">➕ Tambah</button>
         <button id="deleteBtn" style="display:none;" onclick="deleteTask()">🗑️ Padam</button>
       </div>
@@ -56,6 +61,8 @@ window.loadPlanningCalendar = function () {
     startInput.addEventListener('change', updatePeriodFromStartEnd);
     endInput.addEventListener('change', updatePeriodFromStartEnd);
     periodInput.addEventListener('input', updateEndFromStartAndPeriod);
+
+    loadProjects();
 
     function updatePeriodFromStartEnd() {
       const start = new Date(startInput.value);
@@ -331,3 +338,43 @@ window.loadPlanningCalendar = function () {
   };
 
 };
+
+window.createProject = function () {
+  const name = document.getElementById('newProjectName').value.trim();
+  if (!name) return alert("Sila isi nama projek");
+
+  fetch('/api/projects/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ project_name: name })
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("Projek berjaya ditambah");
+        document.getElementById('newProjectName').value = '';
+        loadProjects(); // ✅ betulkan function ni
+      } else {
+        alert("Gagal tambah projek");
+      }
+    });
+}
+
+function loadProjects() {
+  const projectSelect = document.getElementById('projectSelect');
+  projectSelect.innerHTML = '<option value="">-- Pilih Projek --</option>';
+
+  fetch('/api/projects')
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        data.projects.forEach(project => {
+          const option = document.createElement('option');
+          option.value = project.id;
+          option.textContent = project.project_name;
+          projectSelect.appendChild(option);
+        });
+      }
+    });
+}
+
