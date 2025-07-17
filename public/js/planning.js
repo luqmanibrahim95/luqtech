@@ -67,20 +67,6 @@ window.loadPlanningCalendar = function () {
       }
     }
 
-    function populateProjectDropdown(tasks) {
-      const select = document.getElementById('existingProjectSelect');
-      if (!select) return;
-
-      const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
-      select.innerHTML = `<option value="">➕ (Projek Baru)</option>` + 
-        projects.map(p => `<option value="${p}">${p}</option>`).join('');
-
-      select.addEventListener('change', () => {
-        const val = select.value;
-        document.getElementById('project_name').value = val;
-      });
-    }
-
     function updateEndFromStartAndPeriod() {
       const start = new Date(startInput.value);
       const days = parseInt(periodInput.value);
@@ -90,6 +76,20 @@ window.loadPlanningCalendar = function () {
         endInput.value = end.toISOString().split('T')[0];
       }
     }
+  }
+
+  function populateProjectDropdown(tasks) {
+    const select = document.getElementById('existingProjectSelect');
+    if (!select) return;
+
+    const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
+    select.innerHTML = `<option value="">➕ (Projek Baru)</option>` + 
+      projects.map(p => `<option value="${p}">${p}</option>`).join('');
+
+    select.addEventListener('change', () => {
+      const val = select.value;
+      document.getElementById('project_name').value = val;
+    });
   }
 
   function showCalendarView() {
