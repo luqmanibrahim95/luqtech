@@ -37,7 +37,7 @@ window.loadPlanningCalendar = function () {
     document.getElementById('taskFormContainer').innerHTML = `
       <div id="taskForm" style="margin-bottom: 20px;">
         <select id="existingProjectSelect" style="margin-bottom: 8px;">
-            <option value="">➕ (Projek Baru)</option>
+          <option value="">➕ (Projek Baru)</option>
         </select>
         <input type="text" id="project_name" placeholder="Projek Baru atau pilih di atas" />
         <input type="text" id="taskName" placeholder="Nama Tugasan" />
@@ -78,6 +78,45 @@ window.loadPlanningCalendar = function () {
     }
   }
 
+  function refreshProjectDropdown() {
+    fetch('/api/planning-tasks')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const projectSet = new Set();
+          const existingProjectSelect = document.getElementById('existingProjectSelect');
+          if (!existingProjectSelect) return;
+
+          existingProjectSelect.innerHTML = '<option value="">Pilih projek</option>'; // reset
+
+          data.tasks.forEach(task => {
+            const project = task.project_name;
+            if (project && !projectSet.has(project)) {
+              projectSet.add(project);
+              const option = document.createElement('option');
+              option.value = project;
+              option.textContent = project;
+              existingProjectSelect.appendChild(option);
+            }
+          });
+        }
+      });
+  }
+
+  function populateProjectDropdown(tasks) {
+    const select = document.getElementById('existingProjectSelect');
+    if (!select) return;
+
+    const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
+    select.innerHTML = `<option value="">➕ (Projek Baru)</option>` + 
+      projects.map(p => `<option value="${p}">${p}</option>`).join('');
+
+    select.addEventListener('change', () => {
+      const val = select.value;
+      document.getElementById('project_name').value = val;
+    });
+  }
+
   function showCalendarView() {
     const container = document.getElementById('planningView');
     container.innerHTML = `<div id="calendar"></div>`;
@@ -98,7 +137,7 @@ window.loadPlanningCalendar = function () {
         if (!isAdmin) return;
         selectedEvent = info.event;
         window.selectedEventId = selectedEvent.id;
-        
+
         document.getElementById('project_name').value = selectedEvent.extendedProps.project_name || '';
         document.getElementById('taskName').value = selectedEvent.title;
         document.getElementById('startDate').value = selectedEvent.startStr;
@@ -125,6 +164,7 @@ window.loadPlanningCalendar = function () {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          populateProjectDropdown(data.tasks);
           data.tasks.forEach(task => {
             if (!task.end) return;
             const adjustedEnd = new Date(task.end);
@@ -136,7 +176,9 @@ window.loadPlanningCalendar = function () {
               color: task.color,
               allDay: true,
               id: task.id,
-              project_name: task.project_name  // 🧠 penting!
+              extendedProps: {
+                project_name: task.project_name  // 🧠 penting!
+              }
             });
           });
         }
@@ -254,17 +296,24 @@ window.loadPlanningCalendar = function () {
     fetch('/api/planning-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color, project_name: projectName})
+      body: JSON.stringify({
+        title: name,
+        start: startDate,
+        end: endDate,
+        color: color,
+        project_name: projectName
+      })
     })
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) {
-        alert('Gagal simpan ke server.');
-        newEvent.remove();
-      }
-    });
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) {
+          alert('Gagal simpan ke server.');
+          newEvent.remove();
+        }
+      });
 
     resetForm();
+    refreshProjectDropdown();
   };
 
   window.updateTask = function () {
@@ -302,6 +351,7 @@ window.loadPlanningCalendar = function () {
         selectedEvent.setProp('backgroundColor', updatedColor);
         selectedEvent.setProp('borderColor', updatedColor);
         resetForm();
+        refreshProjectDropdown();
       } else {
         alert("Gagal kemaskini tugasan di server.");
       }
