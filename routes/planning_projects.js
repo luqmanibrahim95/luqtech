@@ -3,23 +3,22 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/db');
 
-router.post('/create', async (req, res) => {
+// Ambil semua projek untuk syarikat
+router.get('/', async (req, res) => {
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
+  if (!user || !user.company_id) return res.json({ success: false });
+
   try {
-    const user = JSON.parse(req.cookies.user || '{}');
-    const { project_name } = req.body;
-    if (!user.id || !user.company_id || !project_name) return res.json({ success: false });
-
-    await pool.query(
-      `INSERT INTO planning_projects (company_id, project_name, created_by)
-       VALUES ($1, $2, $3)`,
-      [user.company_id, project_name, user.id]
+    const result = await pool.query(
+      'SELECT id, project_name FROM planning_projects WHERE company_id = $1 ORDER BY project_name ASC',
+      [user.company_id]
     );
-
-    res.json({ success: true });
+    res.json({ success: true, projects: result.rows });
   } catch (err) {
-    console.error('❌ Projek gagal disimpan:', err);
+    console.error(err);
     res.status(500).json({ success: false });
   }
 });
 
 module.exports = router;
+
