@@ -107,6 +107,27 @@ window.loadPlanningCalendar = function () {
     });
 
     calendar.render();
+
+    calendar.on('eventClick', function(info) {
+      const event = info.event;
+      window.selectedEventId = event.id;
+
+      // Auto-fill form kalau admin
+      if (isAdmin) {
+        document.getElementById('taskName').value = event.title;
+        document.getElementById('startDate').value = event.startStr;
+        document.getElementById('endDate').value = formatDateBack(event.endStr);
+        document.getElementById('colorPicker').value = event.backgroundColor || event.color;
+
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.textContent = '✏️ Kemaskini';
+        submitBtn.onclick = window.updateTask;
+
+        const deleteBtn = document.getElementById('deleteBtn');
+        deleteBtn.style.display = 'inline-block';
+      }
+    });
+
     window.myCalendar = calendar; // simpan global utk update
 
     fetch('/api/planning-tasks')
@@ -165,6 +186,12 @@ window.loadPlanningCalendar = function () {
         });
       });
     }
+  }
+
+  function formatDateBack(dateStr) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
   }
 
   function showTableView() {
@@ -256,6 +283,7 @@ window.loadPlanningCalendar = function () {
 
   // ✅ Global Task Functions (Admin Only)
   window.addTask = function () {
+    const projectName = document.getElementById('project_name')?.value.trim();
     const name = document.getElementById('taskName').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -271,6 +299,7 @@ window.loadPlanningCalendar = function () {
     adjustedEnd.setDate(adjustedEnd.getDate() + 1);
 
     const newEvent = calendar.addEvent({
+      project_name: projectName,
       title: name,
       start: startDate,
       end: adjustedEnd.toISOString().split('T')[0],
@@ -303,38 +332,33 @@ window.loadPlanningCalendar = function () {
     const updatedStart = document.getElementById('startDate').value;
     const updatedEnd = document.getElementById('endDate').value;
     const updatedColor = document.getElementById('colorPicker').value;
+    const updatedProjectName = document.getElementById('project_name')?.value?.trim() || null; // 🆕
 
-    if (!updatedTitle || !updatedStart || !updatedEnd) {
-      alert("Sila isi semua maklumat dengan lengkap.");
-      return;
-    }
+    const taskId = document.getElementById('taskId').value;
 
-    const taskId = selectedEvent.id;
-    fetch('/api/planning-tasks/${taskId}', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor })
+    fetch(`/api/planning-tasks/${taskId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: updatedTitle,
+        start: updatedStart,
+        end: updatedEnd,
+        color: updatedColor,
+        project_name: updatedProjectName // 🆕 Masukkan
+      })
     })
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        selectedEvent.setProp('title', updatedTitle);
-        selectedEvent.setStart(updatedStart);
-
-        const adjEnd = new Date(updatedEnd);
-        adjEnd.setDate(adjEnd.getDate() + 1);
-        selectedEvent.setEnd(adjEnd.toISOString().split('T')[0]);
-
-        selectedEvent.setProp('backgroundColor', updatedColor);
-        selectedEvent.setProp('borderColor', updatedColor);
-        resetForm();
+        Swal.fire('Berjaya!', 'Perancangan dikemaskini.', 'success');
+        calendar.refetchEvents();
+        loadTaskTable(); // kalau ada
+        closeTaskForm();
       } else {
-        alert("Gagal kemaskini tugasan di server.");
+        Swal.fire('Ralat', 'Tidak dapat kemaskini perancangan.', 'error');
       }
-    })
-    .catch(err => {
-      console.error("Update error:", err);
-      alert("Ralat sambungan semasa kemaskini tugasan.");
     });
   };
 
