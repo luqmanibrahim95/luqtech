@@ -50,7 +50,7 @@ app.use('/api', authRoutes);
 app.use('/api', planningRoutes);
 app.use('/api/org-chart', orgChartRoute); 
 app.use('/api/departments', departmentRoutes);
-app.use('/api', planningProjectRoutes);
+app.use('/api/planning-projects', planningProjectRoutes);
 
 
 // Start server
