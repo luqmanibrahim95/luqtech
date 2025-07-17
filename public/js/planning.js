@@ -85,7 +85,27 @@ window.loadPlanningCalendar = function () {
       .then(data => {
         if (data.success) {
           console.log('✅ Data fetch success:', data.tasks);
-          populateProjectDropdown(data.tasks);
+          const projectSet = new Set();
+          const existingProjectSelect = document.getElementById('project');
+          if (!existingProjectSelect) return console.log('⚠️ No project dropdown found.');
+
+          existingProjectSelect.innerHTML = '<option value="">Pilih projek</option>'; // reset
+          data.tasks.forEach(task => {
+            const project = task.project;
+            console.log('🧩 Projek jumpa:', `"${project}"`);
+            if (project && !projectSet.has(project)) {
+              projectSet.add(project);
+              const option = document.createElement('option');
+              option.value = project;
+              option.textContent = project;
+              existingProjectSelect.appendChild(option);
+            }
+          });
+
+          console.log('📦 Options in select:');
+          Array.from(existingProjectSelect.options).forEach(opt => {
+            console.log(`🔸 ${opt.value}`);
+          });
         }
       });
   }
