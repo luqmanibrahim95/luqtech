@@ -91,7 +91,7 @@ window.loadPlanningCalendar = function () {
 
           existingProjectSelect.innerHTML = '<option value="">Pilih projek</option>'; // reset
           data.tasks.forEach(task => {
-            const project = task.project;
+            const project = task.project_name; // ✅ gunakan key yang betul
             console.log('🧩 Projek jumpa:', `"${project}"`);
             if (project && !projectSet.has(project)) {
               projectSet.add(project);
