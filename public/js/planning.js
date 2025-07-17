@@ -27,7 +27,15 @@ window.loadPlanningCalendar = function () {
 
   function switchView() {
     const view = document.getElementById('viewSelect').value;
+    const selectedProject = document.getElementById('projectFilter').value; // Simpan pilihan sekarang
+
     renderTaskForm();
+
+    // Selepas render semula, set balik nilai yang dipilih
+    setTimeout(() => {
+      document.getElementById('projectFilter').value = selectedProject;
+    }, 0);
+
     if (view === 'calendar') {
       showCalendarView();
     } else if (view === 'table') {
