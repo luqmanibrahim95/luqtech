@@ -86,7 +86,7 @@ window.loadPlanningCalendar = function () {
         if (data.success) {
           console.log('✅ Data fetch success:', data.tasks);
           const projectSet = new Set();
-          const existingProjectSelect = document.getElementById('project');
+          const existingProjectSelect = document.getElementById('existingProjectSelect');
           if (!existingProjectSelect) return console.log('⚠️ No project dropdown found.');
 
           existingProjectSelect.innerHTML = '<option value="">Pilih projek</option>'; // reset
