@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/db');
 
-// ✅ Ambil semua projek untuk syarikat user
+// Ambil semua projek untuk syarikat user
 router.get('/', async (req, res) => {
   const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
   if (!user || !user.company_id) {
@@ -11,7 +11,10 @@ router.get('/', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, title, start, end, color FROM planning_tasks WHERE company_id = $1 ORDER BY project_name ASC',
+      `SELECT t.id, t.title, t.start, t.end, t.color, p.project_name
+       FROM planning_tasks t
+       LEFT JOIN planning_projects p ON t.project_id = p.id
+       WHERE t.company_id = ?`,
       [user.company_id]
     );
     res.json({ success: true, projects: result.rows });
@@ -21,7 +24,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ Tambah projek baru
+// Tambah projek baru
 router.post('/create', async (req, res) => {
   const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
   const { project_name } = req.body;
@@ -36,7 +39,7 @@ router.post('/create', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO planning_projects (project_name, company_id, created_by) VALUES ($1, $2, $3) RETURNING id, project_name',
+      'INSERT INTO planning_projects (project_name, company_id, created_by) VALUES (?, ?, ?) RETURNING id, project_name',
       [project_name.trim(), user.company_id, user.id]
     );
     res.json({ success: true, project: result.rows[0] });
