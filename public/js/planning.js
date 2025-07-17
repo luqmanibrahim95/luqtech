@@ -111,7 +111,6 @@ window.loadPlanningCalendar = function () {
   }
 
   function populateProjectDropdown(tasks) {
-    console.log('🎯 Populating project dropdown with tasks:', tasks);
     const select = document.getElementById('existingProjectSelect');
     if (!select) return;
 
