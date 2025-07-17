@@ -98,7 +98,6 @@ window.loadPlanningCalendar = function () {
   function showCalendarView() {
     const container = document.getElementById('planningView');
     container.innerHTML = `<div id="calendar"></div>`;
-    console.log("🔥 All tasks:", data.tasks);
 
     let selectedEvent = null;
     const calendarEl = document.getElementById('calendar');
