@@ -79,20 +79,18 @@ window.loadPlanningCalendar = function () {
   }
 
   function refreshProjectDropdown() {
-    console.log('🔁 Refreshing project dropdown...');
     fetch('/api/planning-tasks')
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          console.log('✅ Data fetch success:', data.tasks);
           const projectSet = new Set();
           const existingProjectSelect = document.getElementById('existingProjectSelect');
-          if (!existingProjectSelect) return console.log('⚠️ No project dropdown found.');
+          if (!existingProjectSelect) return;
 
           existingProjectSelect.innerHTML = '<option value="">Pilih projek</option>'; // reset
+
           data.tasks.forEach(task => {
-            const project = task.project_name; // ✅ gunakan key yang betul
-            console.log('🧩 Projek jumpa:', `"${project}"`);
+            const project = task.project_name;
             if (project && !projectSet.has(project)) {
               projectSet.add(project);
               const option = document.createElement('option');
@@ -100,11 +98,6 @@ window.loadPlanningCalendar = function () {
               option.textContent = project;
               existingProjectSelect.appendChild(option);
             }
-          });
-
-          console.log('📦 Options in select:');
-          Array.from(existingProjectSelect.options).forEach(opt => {
-            console.log(`🔸 ${opt.value}`);
           });
         }
       });
