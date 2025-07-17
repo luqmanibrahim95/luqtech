@@ -98,6 +98,7 @@ window.loadPlanningCalendar = function () {
   function showCalendarView() {
     const container = document.getElementById('planningView');
     container.innerHTML = `<div id="calendar"></div>`;
+    console.log("🔥 All tasks:", data.tasks);
 
     let selectedEvent = null;
     const calendarEl = document.getElementById('calendar');
@@ -374,12 +375,11 @@ window.loadPlanningCalendar = function () {
     });
   };
 
+  function populateProjectFilter(tasks) {
+    const filter = document.getElementById('projectFilter');
+    const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
+    filter.innerHTML = '<option value="ALL">Semua Projek</option>' +
+      projects.map(p => `<option value="${p}">${p}</option>`).join('');
+  }
+
 };
-
-function populateProjectFilter(tasks) {
-  const filter = document.getElementById('projectFilter');
-  const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
-  filter.innerHTML = '<option value="ALL">Semua Projek</option>' +
-    projects.map(p => `<option value="${p}">${p}</option>`).join('');
-}
-
