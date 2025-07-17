@@ -36,7 +36,10 @@ window.loadPlanningCalendar = function () {
     if (!isAdmin) return;
     document.getElementById('taskFormContainer').innerHTML = `
       <div id="taskForm" style="margin-bottom: 20px;">
-        <input type="text" id="project_name" placeholder="Project" />
+        <select id="existingProjectSelect" style="margin-bottom: 8px;">
+          <option value="">➕ (Projek Baru)</option>
+        </select>
+        <input type="text" id="project_name" placeholder="Projek Baru atau pilih di atas" />
         <input type="text" id="taskName" placeholder="Nama Tugasan" />
         <input type="date" id="startDate" />
         <input type="date" id="endDate" />
@@ -62,6 +65,20 @@ window.loadPlanningCalendar = function () {
         const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
         periodInput.value = diff;
       }
+    }
+
+    function populateProjectDropdown(tasks) {
+      const select = document.getElementById('existingProjectSelect');
+      if (!select) return;
+
+      const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
+      select.innerHTML = `<option value="">➕ (Projek Baru)</option>` + 
+        projects.map(p => `<option value="${p}">${p}</option>`).join('');
+
+      select.addEventListener('change', () => {
+        const val = select.value;
+        document.getElementById('project_name').value = val;
+      });
     }
 
     function updateEndFromStartAndPeriod() {
@@ -96,6 +113,7 @@ window.loadPlanningCalendar = function () {
         selectedEvent = info.event;
         window.selectedEventId = selectedEvent.id;
 
+        document.getElementById('project_name').value = selectedEvent.extendedProps.project_name || '';
         document.getElementById('taskName').value = selectedEvent.title;
         document.getElementById('startDate').value = selectedEvent.startStr;
         document.getElementById('endDate').value = formatDateBack(selectedEvent.end);
@@ -121,6 +139,7 @@ window.loadPlanningCalendar = function () {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          populateProjectDropdown(data.tasks);
           data.tasks.forEach(task => {
             if (!task.end) return;
             const adjustedEnd = new Date(task.end);
@@ -222,6 +241,7 @@ window.loadPlanningCalendar = function () {
 
   // ✅ Global Task Functions (Admin Only)
   window.addTask = function () {
+    const projectName = document.getElementById('project_name').value.trim();
     const name = document.getElementById('taskName').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -247,7 +267,7 @@ window.loadPlanningCalendar = function () {
     fetch('/api/planning-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color })
+      body: JSON.stringify({ title: name, start: startDate, end: endDate, color: color, project_name: projectName })
     })
     .then(res => res.json())
     .then(data => {
@@ -265,6 +285,7 @@ window.loadPlanningCalendar = function () {
     const selectedEvent = calendar.getEventById(window.selectedEventId);
     if (!selectedEvent) return;
 
+    const updatedProject = document.getElementById('project_name').value.trim();
     const updatedTitle = document.getElementById('taskName').value.trim();
     const updatedStart = document.getElementById('startDate').value;
     const updatedEnd = document.getElementById('endDate').value;
@@ -279,7 +300,7 @@ window.loadPlanningCalendar = function () {
     fetch(`/api/planning-tasks/${taskId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor })
+      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor, project_name: updatedProject })
     })
     .then(res => res.json())
     .then(data => {
