@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, project_name FROM planning_projects WHERE company_id = $1 ORDER BY project_name ASC',
+      'SELECT id, title, start, end, color FROM planning_tasks WHERE company_id = $1 ORDER BY project_name ASC',
       [user.company_id]
     );
     res.json({ success: true, projects: result.rows });
