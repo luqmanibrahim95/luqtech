@@ -3,9 +3,9 @@ window.loadPlanningCalendar = function () {
   const isAdmin = window.isAdmin;
 
   document.querySelector('.center-panel').innerHTML = `
-    <h2 style="margin-bottom: 20px;">📅 Perancangan Bulanan</h2>
+    <h2>📅 Perancangan Bulanan</h2>
     <label for="viewSelect">Papar Sebagai:</label>
-    <select id="viewSelect" style="margin-bottom: 20px;">
+    <select id="viewSelect">
       <option value="calendar">Kalendar</option>
       <option value="table">Jadual</option>
       <option value="gantt">Gantt Chart</option>
@@ -16,7 +16,6 @@ window.loadPlanningCalendar = function () {
 
   document.getElementById('viewSelect').addEventListener('change', switchView);
 
-  // ⬇️ Initialize with default view
   renderTaskForm();
   showCalendarView();
 
@@ -76,82 +75,121 @@ window.loadPlanningCalendar = function () {
   }
 
   function showCalendarView() {
-    const container = document.getElementById('planningView');
-    container.innerHTML = `<div id="calendar"></div>`;
+    const container = document.querySelector('#planningView');
+    container.innerHTML = `
+      <label for="projectFilter">Tapis Projek:</label>
+      <select id="projectFilter" style="margin: 10px 0;">
+        <option value="">Semua Projek</option>
+      </select>
+      <div id="calendar"></div>
+    `;
 
-    let selectedEvent = null;
     const calendarEl = document.getElementById('calendar');
     const calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
-      locale: 'ms',
-      height: 600,
+      height: 'auto',
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'dayGridMonth,timeGridWeek'
+        right: 'dayGridMonth,timeGridWeek,listWeek'
       },
-      events: [],
+      events: function(fetchInfo, successCallback, failureCallback) {
+        fetch('/api/planning-tasks')
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              populateProjectFilter(data.tasks);
+              const filteredTasks = getFilteredTasks(data.tasks);
+              const events = filteredTasks.map(task => {
+                if (!task.end) return null;
+                const adjustedEnd = new Date(task.end);
+                adjustedEnd.setDate(adjustedEnd.getDate() + 1);
+                return {
+                  title: task.title,
+                  start: task.start,
+                  end: adjustedEnd.toISOString().split('T')[0],
+                  color: task.color,
+                  allDay: true,
+                  id: task.id,
+                  extendedProps: {
+                    project_name: task.project_name
+                  }
+                };
+              }).filter(e => e);
+              successCallback(events);
+            } else {
+              failureCallback('Gagal ambil data');
+            }
+          })
+          .catch(err => failureCallback(err));
+      },
       eventClick: function(info) {
         if (!isAdmin) return;
-        selectedEvent = info.event;
-        window.selectedEventId = selectedEvent.id;
+        const event = info.event;
+        window.selectedEventId = event.id;
 
-        document.getElementById('taskName').value = selectedEvent.title;
-        document.getElementById('startDate').value = selectedEvent.startStr;
-        document.getElementById('endDate').value = formatDateBack(selectedEvent.end);
-        document.getElementById('colorPicker').value = selectedEvent.backgroundColor;
+        document.getElementById('taskName').value = event.title;
+        document.getElementById('startDate').value = event.startStr;
+        document.getElementById('endDate').value = formatDateBack(event.endStr);
+        document.getElementById('colorPicker').value = event.backgroundColor || event.color;
+        document.getElementById('project_name').value = event.extendedProps.project_name || '';
 
-        const diff = Math.ceil((new Date(selectedEvent.end) - new Date(selectedEvent.start)) / (1000 * 60 * 60 * 24));
-        document.getElementById('period').value = diff;
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.textContent = '✏️ Kemaskini';
+        submitBtn.onclick = window.updateTask;
 
-        document.getElementById('submitBtn').textContent = '✏️ Kemaskini';
-        document.getElementById('submitBtn').onclick = updateTask;
-        document.getElementById('deleteBtn').style.display = 'inline-block';
-      },
-      dateClick: function() {
-        if (!isAdmin) return;
-        resetForm();
+        const deleteBtn = document.getElementById('deleteBtn');
+        deleteBtn.style.display = 'inline-block';
       }
     });
 
-    window.myCalendar = calendar;
     calendar.render();
+    window.myCalendar = calendar;
 
-    fetch('/api/planning-tasks')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          data.tasks.forEach(task => {
-            if (!task.end) return;
-            const adjustedEnd = new Date(task.end);
-            adjustedEnd.setDate(adjustedEnd.getDate() + 1);
-            calendar.addEvent({
-              title: task.title,
-              start: task.start,
-              end: adjustedEnd.toISOString().split('T')[0],
-              color: task.color,
-              allDay: true,
-              id: task.id
-            });
-          });
-        }
+    document.getElementById('projectFilter').addEventListener('change', () => {
+      calendar.refetchEvents();
+    });
+
+    function populateProjectFilter(tasks) {
+      const select = document.getElementById('projectFilter');
+      const projects = [...new Set(tasks.map(t => t.project_name).filter(Boolean))];
+      select.innerHTML = `<option value="">Semua Projek</option>`;
+      projects.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
       });
+    }
+
+    function getFilteredTasks(tasks) {
+      const filter = document.getElementById('projectFilter').value;
+      return filter ? tasks.filter(t => t.project_name === filter) : tasks;
+    }
+  }
+
+  function formatDateBack(dateStr) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
   }
 
   function showTableView() {
     const container = document.getElementById('planningView');
-    container.innerHTML = `<table border="1" cellspacing="0" cellpadding="8">
-      <thead>
-        <tr>
-          <th>Nama Tugasan</th>
-          <th>Tarikh Mula</th>
-          <th>Tarikh Tamat</th>
-          <th>Tempoh (hari)</th>
-          <th>Warna</th>
-        </tr>
-      </thead>
-      <tbody id="taskTableBody"></tbody>
-    </table>`;
+    container.innerHTML = `
+      <table border="1" cellspacing="0" cellpadding="8">
+        <thead>
+          <tr>
+            <th>Nama Tugasan</th>
+            <th>Tarikh Mula</th>
+            <th>Tarikh Tamat</th>
+            <th>Tempoh (hari)</th>
+            <th>Warna</th>
+          </tr>
+        </thead>
+        <tbody id="taskTableBody"></tbody>
+      </table>
+    `;
 
     fetch('/api/planning-tasks')
       .then(res => res.json())
@@ -179,15 +217,18 @@ window.loadPlanningCalendar = function () {
   function showGanttChartView() {
     const container = document.getElementById('planningView');
     container.innerHTML = `<div id="ganttChart"></div>`;
+
     fetch('/api/planning-tasks')
       .then(res => res.json())
       .then(data => {
         if (!data.success) return;
+
         const chart = document.getElementById('ganttChart');
         chart.innerHTML = data.tasks.map(task => {
           const start = new Date(task.start);
           const end = new Date(task.end);
           const duration = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
           return `
             <div style="margin: 10px 0;">
               <div>${task.title} (${task.start} → ${task.end})</div>
@@ -222,6 +263,7 @@ window.loadPlanningCalendar = function () {
 
   // ✅ Global Task Functions (Admin Only)
   window.addTask = function () {
+    const projectName = document.getElementById('project_name')?.value.trim();
     const name = document.getElementById('taskName').value.trim();
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -237,6 +279,7 @@ window.loadPlanningCalendar = function () {
     adjustedEnd.setDate(adjustedEnd.getDate() + 1);
 
     const newEvent = calendar.addEvent({
+      project_name: projectName,
       title: name,
       start: startDate,
       end: adjustedEnd.toISOString().split('T')[0],
@@ -269,38 +312,33 @@ window.loadPlanningCalendar = function () {
     const updatedStart = document.getElementById('startDate').value;
     const updatedEnd = document.getElementById('endDate').value;
     const updatedColor = document.getElementById('colorPicker').value;
+    const updatedProjectName = document.getElementById('project_name')?.value?.trim() || null; // 🆕
 
-    if (!updatedTitle || !updatedStart || !updatedEnd) {
-      alert("Sila isi semua maklumat dengan lengkap.");
-      return;
-    }
+    const taskId = document.getElementById('taskId').value;
 
-    const taskId = selectedEvent.id;
     fetch(`/api/planning-tasks/${taskId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: updatedTitle, start: updatedStart, end: updatedEnd, color: updatedColor })
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: updatedTitle,
+        start: updatedStart,
+        end: updatedEnd,
+        color: updatedColor,
+        project_name: updatedProjectName // 🆕 Masukkan
+      })
     })
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        selectedEvent.setProp('title', updatedTitle);
-        selectedEvent.setStart(updatedStart);
-
-        const adjEnd = new Date(updatedEnd);
-        adjEnd.setDate(adjEnd.getDate() + 1);
-        selectedEvent.setEnd(adjEnd.toISOString().split('T')[0]);
-
-        selectedEvent.setProp('backgroundColor', updatedColor);
-        selectedEvent.setProp('borderColor', updatedColor);
-        resetForm();
+        Swal.fire('Berjaya!', 'Perancangan dikemaskini.', 'success');
+        calendar.refetchEvents();
+        loadTaskTable(); // kalau ada
+        closeTaskForm();
       } else {
-        alert("Gagal kemaskini tugasan di server.");
+        Swal.fire('Ralat', 'Tidak dapat kemaskini perancangan.', 'error');
       }
-    })
-    .catch(err => {
-      console.error("Update error:", err);
-      alert("Ralat sambungan semasa kemaskini tugasan.");
     });
   };
 
@@ -310,7 +348,7 @@ window.loadPlanningCalendar = function () {
     if (!selectedEvent) return;
 
     const eventId = selectedEvent.id;
-    fetch(`/api/planning-tasks/${eventId}`, {
+    fetch('/api/planning-tasks/${eventId}', {
       method: 'DELETE'
     })
     .then(res => res.json())
