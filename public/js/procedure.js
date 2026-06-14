@@ -75,6 +75,14 @@ async function loadProcedureList() {
                             ✏ Edit
                         </button>
 
+                        <button onclick="editProcedure(${proc.id})">
+                            ✏ Edit
+                        </button>
+
+                        <button onclick="deleteProcedure(${proc.id})">
+                            🗑 Delete
+                        </button>
+
                     </div>
                 `;
 
@@ -279,6 +287,51 @@ async function updateProcedure(id) {
         } else {
 
             alert('Gagal kemaskini.');
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
+
+    }
+
+}
+
+async function deleteProcedure(id) {
+
+    const confirmDelete = confirm(
+        'Adakah anda pasti mahu padam prosedur ini?'
+    );
+
+    if (!confirmDelete) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/procedures/delete/${id}`,
+                {
+                    method: 'DELETE'
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (result.success) {
+
+            alert('Prosedur berjaya dipadam.');
+
+            loadProcedureList();
+
+        } else {
+
+            alert('Gagal padam prosedur.');
 
         }
 

@@ -198,4 +198,33 @@ router.put('/update/:id', async (req, res) => {
 
 });
 
+// ===============================
+// Delete Procedure
+// ===============================
+router.delete('/delete/:id', async (req, res) => {
+
+    try {
+
+        await pool.query(
+            `DELETE FROM procedures
+             WHERE id = ?`,
+            [req.params.id]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;
