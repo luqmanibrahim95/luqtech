@@ -85,7 +85,7 @@ function showAddForm() {
     const centerPanel =
         document.querySelector('.center-panel');
 
-    centerPanel.innerHTML = `loadProcedureOptions();
+    centerPanel.innerHTML = `
 
         <h2>📋 Tambah Form</h2>
 
