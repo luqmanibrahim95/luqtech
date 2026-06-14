@@ -121,4 +121,81 @@ router.get('/list', async (req, res) => {
 
 });
 
+// ===============================
+// Get Single Procedure
+// ===============================
+router.get('/:id', async (req, res) => {
+
+    try {
+
+        const [rows] = await pool.query(
+            `SELECT *
+             FROM procedures
+             WHERE id = ?`,
+            [req.params.id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({
+                success: false
+            });
+        }
+
+        res.json({
+            success: true,
+            procedure: rows[0]
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+// ===============================
+// Update Procedure
+// ===============================
+router.put('/update/:id', async (req, res) => {
+
+    const {
+        procedure_name,
+        procedure_code
+    } = req.body;
+
+    try {
+
+        await pool.query(
+            `UPDATE procedures
+             SET procedure_name = ?,
+                 procedure_code = ?
+             WHERE id = ?`,
+            [
+                procedure_name,
+                procedure_code,
+                req.params.id
+            ]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;

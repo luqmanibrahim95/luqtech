@@ -68,6 +68,12 @@ async function loadProcedureList() {
                         ${proc.status}
 
                         <hr>
+                        
+                        <br><br>
+
+                        <button onclick="editProcedure(${proc.id})">
+                            ✏ Edit
+                        </button>
 
                     </div>
                 `;
@@ -164,6 +170,115 @@ async function saveProcedure() {
         } else {
 
             alert(result.message || 'Gagal simpan.');
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
+
+    }
+
+}
+
+async function editProcedure(id) {
+
+    try {
+
+        const response =
+            await fetch(`/api/procedures/${id}`);
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+            alert('Data tidak dijumpai.');
+            return;
+        }
+
+        const proc =
+            result.procedure;
+
+        const centerPanel =
+            document.querySelector('.center-panel');
+
+        centerPanel.innerHTML = `
+            <h2>✏ Edit Procedure</h2>
+
+            <label>Nama Procedure</label>
+            <br>
+            <input
+                type="text"
+                id="procedureName"
+                value="${proc.procedure_name}">
+            <br><br>
+
+            <label>Kod Procedure</label>
+            <br>
+            <input
+                type="text"
+                id="procedureCode"
+                value="${proc.procedure_code}">
+            <br><br>
+
+            <button onclick="updateProcedure(${proc.id})">
+                Simpan
+            </button>
+
+            <button onclick="loadProcedureList()">
+                Batal
+            </button>
+        `;
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
+
+    }
+
+}
+
+async function updateProcedure(id) {
+
+    const procedureName =
+        document.getElementById('procedureName').value.trim();
+
+    const procedureCode =
+        document.getElementById('procedureCode').value.trim();
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/procedures/update/${id}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        procedure_name: procedureName,
+                        procedure_code: procedureCode
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (result.success) {
+
+            alert('Procedure berjaya dikemaskini.');
+
+            loadProcedureList();
+
+        } else {
+
+            alert('Gagal kemaskini.');
 
         }
 
