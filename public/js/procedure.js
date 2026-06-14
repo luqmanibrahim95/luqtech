@@ -426,13 +426,6 @@ async function openProcedure(id) {
                 📋 Related Forms
             </h3>
 
-            <button
-                onclick="loadProcedureList()">
-                
-                ← Back
-
-            </button>
-
         `;
 
         if (result.forms &&
@@ -460,6 +453,19 @@ async function openProcedure(id) {
             });
 
         }
+
+        centerPanel.innerHTML += `
+
+            <br>
+
+            <button
+                onclick="loadProcedureList()">
+
+                ← Back
+
+            </button>
+
+        `;
 
     } catch (err) {
 
