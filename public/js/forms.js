@@ -299,9 +299,9 @@ async function openForm(id) {
             <br><br>
 
             <button
-                onclick="saveField(${form.id})">
+                onclick="previewForm(${form.id})">
 
-                ➕ Tambah Field
+                👁 Preview Form
 
             </button>
 
@@ -377,6 +377,148 @@ async function saveField(formId) {
     } catch (err) {
 
         console.error(err);
+
+    }
+
+}
+
+async function previewForm(id) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/forms/detail/${id}`
+            );
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+
+            alert('Form tidak dijumpai.');
+            return;
+
+        }
+
+        const form =
+            result.form;
+
+        let html = `
+
+            <h2>
+                📋 ${form.form_name}
+            </h2>
+
+            <p>
+                <strong>Code:</strong>
+                ${form.form_code}
+            </p>
+
+            <hr>
+
+        `;
+
+        result.fields.forEach(field => {
+
+            html += `
+                <div>
+
+                    <label>
+                        ${field.field_label}
+                    </label>
+
+                    <br>
+            `;
+
+            if (
+                field.field_type === 'text'
+            ) {
+
+                html += `
+                    <input
+                        type="text"
+                        style="
+                            width:300px;
+                        ">
+                `;
+
+            }
+
+            else if (
+                field.field_type === 'textarea'
+            ) {
+
+                html += `
+                    <textarea
+                        style="
+                            width:500px;
+                            height:100px;
+                        ">
+                    </textarea>
+                `;
+
+            }
+
+            else if (
+                field.field_type === 'date'
+            ) {
+
+                html += `
+                    <input
+                        type="date">
+                `;
+
+            }
+
+            else if (
+                field.field_type === 'dropdown'
+            ) {
+
+                html += `
+                    <select>
+                        <option>
+                            Pilih
+                        </option>
+                    </select>
+                `;
+
+            }
+
+            html += `
+                    <br><br>
+
+                </div>
+            `;
+
+        });
+
+        html += `
+
+            <button>
+
+                Submit
+
+            </button>
+
+            <button
+                onclick="openForm(${form.id})">
+
+                ← Builder
+
+            </button>
+
+        `;
+
+        document.querySelector(
+            '.center-panel'
+        ).innerHTML = html;
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
 
     }
 
