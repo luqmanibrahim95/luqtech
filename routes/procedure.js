@@ -135,6 +135,14 @@ router.get('/:id', async (req, res) => {
             [req.params.id]
         );
 
+        const [forms] = await pool.query(
+            `SELECT *
+            FROM forms
+            WHERE linked_procedure_id = ?
+            ORDER BY form_code`,
+            [req.params.id]
+        );
+
         if (rows.length === 0) {
             return res.status(404).json({
                 success: false
@@ -143,7 +151,8 @@ router.get('/:id', async (req, res) => {
 
         res.json({
             success: true,
-            procedure: rows[0]
+            procedure: rows[0],
+            forms
         });
 
     } catch (err) {
@@ -249,9 +258,18 @@ router.get('/detail/:id', async (req, res) => {
 
         }
 
+        const [forms] = await pool.query(
+            `SELECT *
+             FROM forms
+             WHERE linked_procedure_id = ?
+             ORDER BY form_code`,
+            [req.params.id]
+        );
+
         res.json({
             success: true,
-            procedure: rows[0]
+            procedure: rows[0],
+            forms
         });
 
     } catch (err) {
