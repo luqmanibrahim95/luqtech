@@ -123,4 +123,108 @@ router.get('/list', async (req, res) => {
 
 });
 
+// ===============================
+// Form Detail
+// ===============================
+router.get('/detail/:id', async (req, res) => {
+
+    try {
+
+        const [formRows] = await pool.query(
+            `SELECT *
+             FROM forms
+             WHERE id = ?`,
+            [req.params.id]
+        );
+
+        if (formRows.length === 0) {
+
+            return res.status(404).json({
+                success: false
+            });
+
+        }
+
+        const [fieldRows] = await pool.query(
+            `SELECT *
+             FROM form_fields
+             WHERE form_id = ?
+             ORDER BY field_order ASC, id ASC`,
+            [req.params.id]
+        );
+
+        res.json({
+            success: true,
+            form: formRows[0],
+            fields: fieldRows
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+// ===============================
+// Add Field
+// ===============================
+router.post('/field/create', async (req, res) => {
+
+    const {
+        form_id,
+        field_label,
+        field_type
+    } = req.body;
+
+    try {
+
+        const [lastRow] = await pool.query(
+            `SELECT MAX(field_order) as max_order
+             FROM form_fields
+             WHERE form_id = ?`,
+            [form_id]
+        );
+
+        const nextOrder =
+            (lastRow[0].max_order || 0) + 1;
+
+        await pool.query(
+            `INSERT INTO form_fields
+            (
+                form_id,
+                field_label,
+                field_type,
+                field_order
+            )
+            VALUES (?, ?, ?, ?)`,
+            [
+                form_id,
+                field_label,
+                field_type,
+                nextOrder
+            ]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;
