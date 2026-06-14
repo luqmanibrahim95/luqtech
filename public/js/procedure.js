@@ -435,6 +435,32 @@ async function openProcedure(id) {
 
         `;
 
+        if (result.forms &&
+            result.forms.length > 0) {
+
+            result.forms.forEach(form => {
+
+                centerPanel.innerHTML += `
+
+                    <div>
+
+                        <button
+                            onclick="previewForm(${form.id})">
+
+                            📋 ${form.form_code}
+                            -
+                            ${form.form_name}
+
+                        </button>
+
+                    </div>
+
+                `;
+
+            });
+
+        }
+
     } catch (err) {
 
         console.error(err);
