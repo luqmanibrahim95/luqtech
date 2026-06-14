@@ -32,22 +32,36 @@ router.post('/create', async (req, res) => {
 
     try {
 
-        await pool.query(
-            `INSERT INTO procedures
-            (
-                company_id,
-                procedure_code,
-                procedure_name,
-                created_by
-            )
-            VALUES (?, ?, ?, ?)`,
-            [
-                user.company_id,
-                procedure_code,
-                procedure_name,
-                user.id
-            ]
-        );
+        // Cari susunan terakhir
+
+    const [lastRow] = await pool.query(
+        `SELECT MAX(display_order) as max_order
+        FROM procedures
+        WHERE company_id = ?`,
+        [user.company_id]
+    );
+
+    const nextOrder =
+        (lastRow[0].max_order || 0) + 1;
+
+    await pool.query(
+        `INSERT INTO procedures
+        (
+            company_id,
+            procedure_code,
+            procedure_name,
+            created_by,
+            display_order
+        )
+        VALUES (?, ?, ?, ?, ?)`,
+        [
+            user.company_id,
+            procedure_code,
+            procedure_name,
+            user.id,
+            nextOrder
+        ]
+    );
 
         res.json({
             success: true
@@ -84,9 +98,9 @@ router.get('/list', async (req, res) => {
 
         const [rows] = await pool.query(
             `SELECT *
-             FROM procedures
-             WHERE company_id = ?
-             ORDER BY procedure_code`,
+            FROM procedures
+            WHERE company_id = ?
+            ORDER BY display_order ASC, id ASC`,
             [user.company_id]
         );
 
