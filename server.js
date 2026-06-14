@@ -41,6 +41,7 @@ app.get('/', (req, res) => {
 const companyRoutes = require('./routes/company');
 const authRoutes = require('./routes/auth');
 const planningRoutes = require('./routes/planning');
+const procedureRoutes = require('./routes/procedure');
 const orgChartRoute = require('./routes/org_chart');
 const departmentRoutes = require('./routes/department');
 const planningProjectRoutes = require('./routes/planning_projects');
@@ -48,6 +49,7 @@ const planningProjectRoutes = require('./routes/planning_projects');
 app.use('/api', companyRoutes);
 app.use('/api', authRoutes);
 app.use('/api', planningRoutes);
+app.use('/api/procedures', procedureRoutes);
 app.use('/api/org-chart', orgChartRoute); 
 app.use('/api/departments', departmentRoutes);
 app.use('/api/planning-projects', planningProjectRoutes);
