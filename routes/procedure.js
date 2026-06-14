@@ -65,4 +65,46 @@ router.post('/create', async (req, res) => {
 
 });
 
+// ===============================
+// Senarai Procedure
+// ===============================
+router.get('/list', async (req, res) => {
+
+    const user = req.cookies.user
+        ? JSON.parse(req.cookies.user)
+        : null;
+
+    if (!user || !user.company_id) {
+        return res.status(401).json({
+            success: false
+        });
+    }
+
+    try {
+
+        const [rows] = await pool.query(
+            `SELECT *
+             FROM procedures
+             WHERE company_id = ?
+             ORDER BY procedure_code`,
+            [user.company_id]
+        );
+
+        res.json({
+            success: true,
+            procedures: rows
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;
