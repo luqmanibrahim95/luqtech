@@ -369,6 +369,9 @@ async function openProcedure(id) {
 
         }
 
+        const proc =
+            result.procedure;
+
         const forms =
             result.forms || [];
 
@@ -437,30 +440,6 @@ async function openProcedure(id) {
         console.error(err);
 
         alert('Ralat sistem.');
-
-    }
-
-    if (forms.length > 0) {
-
-        forms.forEach(form => {
-
-            centerPanel.innerHTML += `
-
-                <div style="margin-bottom:10px;">
-
-                    <button
-                        onclick="previewForm(${form.id})">
-
-                        📋 ${form.form_code}
-                        - ${form.form_name}
-
-                    </button>
-
-                </div>
-
-            `;
-
-        });
 
     }
 
