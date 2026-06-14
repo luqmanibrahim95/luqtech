@@ -79,10 +79,6 @@ async function loadProcedureList() {
                             ✏ Edit
                         </button>
 
-                        <button onclick="editProcedure(${proc.id})">
-                            ✏ Edit
-                        </button>
-
                         <button onclick="deleteProcedure(${proc.id})">
                             🗑 Delete
                         </button>
