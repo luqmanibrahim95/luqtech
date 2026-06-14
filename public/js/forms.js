@@ -85,7 +85,7 @@ function showAddForm() {
     const centerPanel =
         document.querySelector('.center-panel');
 
-    centerPanel.innerHTML = `
+    centerPanel.innerHTML = `loadProcedureOptions();
 
         <h2>📋 Tambah Form</h2>
 
@@ -107,6 +107,19 @@ function showAddForm() {
 
         <br><br>
 
+        <br><br>
+
+        <label>Linked Procedure</label>
+        <br>
+
+        <select id="linkedProcedure">
+
+            <option value="">
+                -- Tiada --
+            </option>
+
+        </select>
+
         <button
             onclick="saveForm()">
 
@@ -122,6 +135,7 @@ function showAddForm() {
         </button>
 
     `;
+    loadProcedureOptions();
 }
 
 async function saveForm() {
@@ -135,6 +149,11 @@ async function saveForm() {
         document.getElementById(
             'formName'
         ).value.trim();
+
+    const linkedProcedure =
+    document.getElementById(
+        'linkedProcedure'
+    ).value;
 
     if (!formCode || !formName) {
 
@@ -159,7 +178,9 @@ async function saveForm() {
                     },
                     body: JSON.stringify({
                         form_code: formCode,
-                        form_name: formName
+                        form_name: formName,
+                        linked_procedure_id:
+                            linkedProcedure || null
                     })
                 }
             );
@@ -773,6 +794,43 @@ async function openRecord(
         document.querySelector(
             '.center-panel'
         ).innerHTML = html;
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+}
+
+async function loadProcedureOptions() {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/procedures/list'
+            );
+
+        const result =
+            await response.json();
+
+        const select =
+            document.getElementById(
+                'linkedProcedure'
+            );
+
+        result.procedures.forEach(proc => {
+
+            select.innerHTML += `
+                <option value="${proc.id}">
+                    ${proc.procedure_code}
+                    -
+                    ${proc.procedure_name}
+                </option>
+            `;
+
+        });
 
     } catch (err) {
 

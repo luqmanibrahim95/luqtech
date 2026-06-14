@@ -13,7 +13,8 @@ router.post('/create', async (req, res) => {
 
     const {
         form_code,
-        form_name
+        form_name,
+        linked_procedure_id
     } = req.body;
 
     if (!user || !user.company_id) {
@@ -46,18 +47,20 @@ router.post('/create', async (req, res) => {
 
         await pool.query(
             `INSERT INTO forms
-            (
-                company_id,
-                form_code,
-                form_name,
-                display_order,
-                created_by
-            )
+                (
+                    company_id,
+                    form_code,
+                    form_name,
+                    linked_procedure_id,
+                    display_order,
+                    created_by
+                )
             VALUES (?, ?, ?, ?, ?)`,
             [
                 user.company_id,
                 form_code,
                 form_name,
+                linked_procedure_id || null,
                 nextOrder,
                 user.id
             ]
