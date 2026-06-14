@@ -270,6 +270,18 @@ async function openForm(id) {
                             (${field.field_type})
                         </small>
 
+                        <button
+                            onclick="
+                                deleteField(
+                                    ${field.id},
+                                    ${form.id}
+                                )
+                            ">
+
+                            🗑 Delete
+
+                        </button>
+
                     </div>
 
                     <br>
@@ -316,6 +328,15 @@ async function openForm(id) {
                 </option>
 
             </select>
+
+            <br><br>
+
+            <button
+                onclick="saveField(${form.id})">
+
+                ➕ Tambah Field
+
+            </button>
 
             <br><br>
 
@@ -835,6 +856,56 @@ async function loadProcedureOptions() {
     } catch (err) {
 
         console.error(err);
+
+    }
+
+}
+
+async function deleteField(
+    fieldId,
+    formId
+) {
+
+    if (
+        !confirm(
+            'Padam field ini?'
+        )
+    ) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/forms/field/delete/${fieldId}`,
+                {
+                    method: 'DELETE'
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (result.success) {
+
+            openForm(formId);
+
+        } else {
+
+            alert(
+                'Gagal padam field.'
+            );
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            'Ralat sistem.'
+        );
 
     }
 

@@ -377,4 +377,33 @@ router.get('/record/:id', async (req, res) => {
 
 });
 
+// ===============================
+// Delete Field
+// ===============================
+router.delete('/field/delete/:id', async (req, res) => {
+
+    try {
+
+        await pool.query(
+            `DELETE FROM form_fields
+             WHERE id = ?`,
+            [req.params.id]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;
