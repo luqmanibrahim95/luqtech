@@ -441,4 +441,84 @@ router.delete('/delete/:id', async (req, res) => {
 
 });
 
+// ===============================
+// Update Form
+// ===============================
+router.put('/update/:id', async (req, res) => {
+
+    const {
+        form_code,
+        form_name,
+        linked_procedure_id
+    } = req.body;
+
+    try {
+
+        await pool.query(
+            `UPDATE forms
+             SET form_code = ?,
+                 form_name = ?,
+                 linked_procedure_id = ?
+             WHERE id = ?`,
+            [
+                form_code,
+                form_name,
+                linked_procedure_id || null,
+                req.params.id
+            ]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+// ===============================
+// Update Field
+// ===============================
+router.put('/field/update/:id', async (req, res) => {
+
+    const {
+        field_label
+    } = req.body;
+
+    try {
+
+        await pool.query(
+            `UPDATE form_fields
+             SET field_label = ?
+             WHERE id = ?`,
+            [
+                field_label,
+                req.params.id
+            ]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;

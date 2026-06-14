@@ -245,6 +245,15 @@ async function openForm(id) {
                 📋 ${form.form_name}
             </h2>
 
+            <button
+                onclick="showEditForm(${form.id})">
+
+                ✏ Edit Form
+
+            </button>
+
+            <br><br>
+
             <p>
                 <strong>Code:</strong>
                 ${form.form_code}
@@ -276,6 +285,20 @@ async function openForm(id) {
                         <small>
                             (${field.field_type})
                         </small>
+
+                        <button
+                            onclick="
+                                editField(
+                                    ${field.id},
+                                    '${field.field_label}',
+                                    '${field.field_type}',
+                                    ${form.id}
+                                )
+                            ">
+
+                            ✏ Edit
+
+                        </button>
 
                         <button
                             onclick="
@@ -956,6 +979,156 @@ async function deleteForm(id) {
         console.error(err);
 
         alert('Ralat sistem.');
+
+    }
+
+}
+
+async function showEditForm(id) {
+
+    const response =
+        await fetch(
+            `/api/forms/detail/${id}`
+        );
+
+    const result =
+        await response.json();
+
+    const form =
+        result.form;
+
+    const centerPanel =
+        document.querySelector('.center-panel');
+
+    centerPanel.innerHTML = `
+
+        <h2>
+            ✏ Edit Form
+        </h2>
+
+        <label>
+            Form Code
+        </label>
+
+        <br>
+
+        <input
+            id="editFormCode"
+            value="${form.form_code}">
+
+        <br><br>
+
+        <label>
+            Form Name
+        </label>
+
+        <br>
+
+        <input
+            id="editFormName"
+            value="${form.form_name}">
+
+        <br><br>
+
+        <button
+            onclick="saveFormEdit(${form.id})">
+
+            💾 Save
+
+        </button>
+
+        <button
+            onclick="openForm(${form.id})">
+
+            Cancel
+
+        </button>
+
+    `;
+
+}
+
+async function saveFormEdit(id) {
+
+    const form_code =
+        document.getElementById(
+            'editFormCode'
+        ).value;
+
+    const form_name =
+        document.getElementById(
+            'editFormName'
+        ).value;
+
+    const response =
+        await fetch(
+            `/api/forms/update/${id}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+                body: JSON.stringify({
+                    form_code,
+                    form_name
+                })
+            }
+        );
+
+    const result =
+        await response.json();
+
+    if (result.success) {
+
+        alert(
+            'Form berjaya dikemaskini.'
+        );
+
+        openForm(id);
+
+    }
+
+}
+
+async function editField(
+    fieldId,
+    oldLabel,
+    oldType,
+    formId
+) {
+
+    const newLabel =
+        prompt(
+            'Field Label',
+            oldLabel
+        );
+
+    if (!newLabel) {
+        return;
+    }
+
+    const response =
+        await fetch(
+            `/api/forms/field/update/${fieldId}`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+                body: JSON.stringify({
+                    field_label: newLabel
+                })
+            }
+        );
+
+    const result =
+        await response.json();
+
+    if (result.success) {
+
+        openForm(formId);
 
     }
 
