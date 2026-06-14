@@ -307,4 +307,71 @@ router.post('/submit', async (req, res) => {
 
 });
 
+// ===============================
+// Form Records
+// ===============================
+router.get('/records/:formId', async (req, res) => {
+
+    try {
+
+        const [records] = await pool.query(
+            `SELECT *
+             FROM form_records
+             WHERE form_id = ?
+             ORDER BY submitted_at DESC`,
+            [req.params.formId]
+        );
+
+        res.json({
+            success: true,
+            records
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
+// ===============================
+// Record Detail
+// ===============================
+router.get('/record/:id', async (req, res) => {
+
+    try {
+
+        const [values] = await pool.query(
+            `SELECT
+                rv.field_value,
+                ff.field_label
+             FROM form_record_values rv
+             JOIN form_fields ff
+                ON rv.field_id = ff.id
+             WHERE rv.record_id = ?`,
+            [req.params.id]
+        );
+
+        res.json({
+            success: true,
+            values
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;

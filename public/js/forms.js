@@ -306,6 +306,13 @@ async function openForm(id) {
             </button>
 
             <button
+                onclick="viewRecords(${form.id})">
+
+                📝 Records
+
+            </button>
+
+            <button
                 onclick="loadFormList()">
 
                 ← Back
@@ -601,6 +608,175 @@ async function submitForm(formId) {
         alert(
             'Ralat sistem.'
         );
+
+    }
+
+}
+
+async function viewRecords(formId) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/forms/records/${formId}`
+            );
+
+        const result =
+            await response.json();
+
+        let html = `
+
+            <h2>
+                📝 Records
+            </h2>
+
+            <hr>
+
+        `;
+
+        if (
+            result.records.length === 0
+        ) {
+
+            html += `
+                <p>
+                    Tiada record.
+                </p>
+            `;
+
+        } else {
+
+            result.records.forEach(record => {
+
+                html += `
+
+                    <div>
+
+                        Record #${record.id}
+
+                        <br>
+
+                        ${record.submitted_at}
+
+                        <br><br>
+
+                        <button
+                            onclick="
+                                openRecord(
+                                    ${record.id},
+                                    ${formId}
+                                )
+                            ">
+
+                            👁 View
+
+                        </button>
+
+                        <hr>
+
+                    </div>
+
+                `;
+
+            });
+
+        }
+
+        html += `
+
+            <button
+                onclick="openForm(${formId})">
+
+                ← Back
+
+            </button>
+
+        `;
+
+        document.querySelector(
+            '.center-panel'
+        ).innerHTML = html;
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+}
+
+async function openRecord(
+    recordId,
+    formId
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/forms/record/${recordId}`
+            );
+
+        const result =
+            await response.json();
+
+        let html = `
+
+            <h2>
+                📝 Record Detail
+            </h2>
+
+            <hr>
+
+        `;
+
+        result.values.forEach(item => {
+
+            html += `
+
+                <p>
+
+                    <strong>
+
+                        ${item.field_label}
+
+                    </strong>
+
+                    <br>
+
+                    ${item.field_value}
+
+                </p>
+
+                <hr>
+
+            `;
+
+        });
+
+        html += `
+
+            <button
+                onclick="
+                    viewRecords(
+                        ${formId}
+                    )
+                ">
+
+                ← Records
+
+            </button>
+
+        `;
+
+        document.querySelector(
+            '.center-panel'
+        ).innerHTML = html;
+
+    } catch (err) {
+
+        console.error(err);
 
     }
 
