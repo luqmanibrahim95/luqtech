@@ -227,4 +227,84 @@ router.post('/field/create', async (req, res) => {
 
 });
 
+// ===============================
+// Submit Form
+// ===============================
+router.post('/submit', async (req, res) => {
+
+    const user = req.cookies.user
+        ? JSON.parse(req.cookies.user)
+        : null;
+
+    const {
+        form_id,
+        values
+    } = req.body;
+
+    if (!user) {
+
+        return res.status(401).json({
+            success: false
+        });
+
+    }
+
+    try {
+
+        // Create Record
+
+        const [recordResult] =
+            await pool.query(
+                `INSERT INTO form_records
+                (
+                    form_id,
+                    submitted_by
+                )
+                VALUES (?, ?)`,
+                [
+                    form_id,
+                    user.id
+                ]
+            );
+
+        const recordId =
+            recordResult.insertId;
+
+        // Save All Field Values
+
+        for (const item of values) {
+
+            await pool.query(
+                `INSERT INTO form_record_values
+                (
+                    record_id,
+                    field_id,
+                    field_value
+                )
+                VALUES (?, ?, ?)`,
+                [
+                    recordId,
+                    item.field_id,
+                    item.value
+                ]
+            );
+
+        }
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;

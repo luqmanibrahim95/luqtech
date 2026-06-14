@@ -438,6 +438,8 @@ async function previewForm(id) {
                 html += `
                     <input
                         type="text"
+                        data-field-id="${field.id}"
+                        class="form-input"
                         style="
                             width:300px;
                         ">
@@ -451,6 +453,8 @@ async function previewForm(id) {
 
                 html += `
                     <textarea
+                        data-field-id="${field.id}"
+                        class="form-input"
                         style="
                             width:500px;
                             height:100px;
@@ -466,7 +470,9 @@ async function previewForm(id) {
 
                 html += `
                     <input
-                        type="date">
+                        type="date"
+                        data-field-id="${field.id}"
+                        class="form-input">
                 `;
 
             }
@@ -476,7 +482,9 @@ async function previewForm(id) {
             ) {
 
                 html += `
-                    <select>
+                    <select
+                    data-field-id="${field.id}"
+                    class="form-input">
                         <option>
                             Pilih
                         </option>
@@ -495,7 +503,8 @@ async function previewForm(id) {
 
         html += `
 
-            <button>
+            <button
+                onclick="submitForm(${form.id})">
 
                 Submit
 
@@ -519,6 +528,79 @@ async function previewForm(id) {
         console.error(err);
 
         alert('Ralat sistem.');
+
+    }
+
+}
+
+async function submitForm(formId) {
+
+    const inputs =
+        document.querySelectorAll(
+            '.form-input'
+        );
+
+    const values = [];
+
+    inputs.forEach(input => {
+
+        values.push({
+
+            field_id:
+                input.dataset.fieldId,
+
+            value:
+                input.value
+
+        });
+
+    });
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/forms/submit',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+                    body: JSON.stringify({
+
+                        form_id: formId,
+
+                        values
+
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (result.success) {
+
+            alert(
+                'Form berjaya dihantar.'
+            );
+
+        } else {
+
+            alert(
+                'Gagal submit.'
+            );
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert(
+            'Ralat sistem.'
+        );
 
     }
 
