@@ -52,7 +52,13 @@ async function loadProcedureList() {
                 html += `
                     <div class="procedure-item">
 
-                        <strong>${proc.procedure_code}</strong>
+                        <strong
+                            style="cursor:pointer;color:blue"
+                            onclick="openProcedure(${proc.id})">
+
+                            ${proc.procedure_code}
+
+                        </strong>
                         <br>
 
                         ${proc.procedure_name}
@@ -331,6 +337,143 @@ async function deleteProcedure(id) {
         } else {
 
             alert('Gagal padam prosedur.');
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
+
+    }
+
+}
+
+async function openProcedure(id) {
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/procedures/detail/${id}`
+            );
+
+        const result =
+            await response.json();
+
+        if (!result.success) {
+
+            alert('Procedure tidak dijumpai.');
+            return;
+
+        }
+
+        const proc =
+            result.procedure;
+
+        const centerPanel =
+            document.querySelector('.center-panel');
+
+        centerPanel.innerHTML = `
+
+            <h2>
+                📄 ${proc.procedure_name}
+            </h2>
+
+            <p>
+                <strong>Code:</strong>
+                ${proc.procedure_code}
+            </p>
+
+            <p>
+                <strong>Revision:</strong>
+                ${proc.revision_no}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                ${proc.status}
+            </p>
+
+            <hr>
+
+            <h3>Content</h3>
+
+            <textarea
+                id="procedureContent"
+                style="
+                    width:100%;
+                    min-height:500px;
+                "
+            >${proc.content || ''}</textarea>
+
+            <br><br>
+
+            <button
+                onclick="saveProcedureContent(${proc.id})">
+
+                💾 Save Content
+
+            </button>
+
+            <button
+                onclick="loadProcedureList()">
+
+                ← Back
+
+            </button>
+
+        `;
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
+
+    }
+
+}
+
+async function saveProcedureContent(id) {
+
+    const content =
+        document.getElementById(
+            'procedureContent'
+        ).value;
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/procedures/content/${id}`,
+                {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+                    body: JSON.stringify({
+                        content
+                    })
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (result.success) {
+
+            alert(
+                'Content berjaya disimpan.'
+            );
+
+        } else {
+
+            alert(
+                'Gagal simpan content.'
+            );
 
         }
 
