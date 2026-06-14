@@ -50,6 +50,13 @@ async function loadFormList() {
 
                         </strong>
 
+                        <button
+                            onclick="deleteForm(${form.id})">
+
+                            🗑 Delete
+
+                        </button>
+
                         <br>
 
                         ${form.form_name}
@@ -906,6 +913,49 @@ async function deleteField(
         alert(
             'Ralat sistem.'
         );
+
+    }
+
+}
+
+async function deleteForm(id) {
+
+    if (
+        !confirm(
+            'Padam form ini?'
+        )
+    ) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/forms/delete/${id}`,
+                {
+                    method: 'DELETE'
+                }
+            );
+
+        const result =
+            await response.json();
+
+        if (result.success) {
+
+            loadFormList();
+
+        } else {
+
+            alert('Gagal padam.');
+
+        }
+
+    } catch (err) {
+
+        console.error(err);
+
+        alert('Ralat sistem.');
 
     }
 

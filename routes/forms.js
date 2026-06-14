@@ -406,4 +406,39 @@ router.delete('/field/delete/:id', async (req, res) => {
 
 });
 
+// ===============================
+// Delete Form
+// ===============================
+router.delete('/delete/:id', async (req, res) => {
+
+    try {
+
+        await pool.query(
+            `DELETE FROM form_fields
+             WHERE form_id = ?`,
+            [req.params.id]
+        );
+
+        await pool.query(
+            `DELETE FROM forms
+             WHERE id = ?`,
+            [req.params.id]
+        );
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+
+});
+
 module.exports = router;
