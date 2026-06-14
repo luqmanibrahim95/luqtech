@@ -68,9 +68,7 @@ async function loadProcedureList() {
                         ${proc.status}
 
                         <hr>
-                        
-                        <br><br>
-
+                                                
                         <button onclick="editProcedure(${proc.id})">
                             ✏ Edit
                         </button>
@@ -82,6 +80,7 @@ async function loadProcedureList() {
                         <button onclick="deleteProcedure(${proc.id})">
                             🗑 Delete
                         </button>
+                        <br><br>
 
                     </div>
                 `;
